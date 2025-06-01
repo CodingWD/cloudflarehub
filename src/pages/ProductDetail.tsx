@@ -18,9 +18,6 @@ import {
 } from 'lucide-react';
 import { ApiService, ProductInfo } from '../services/api';
 
-// 添加BASE_URL常量
-const BASE_URL = 'http://192.168.31.177:1337';
-
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<ProductInfo | null>(null);
@@ -76,10 +73,10 @@ const ProductDetail: React.FC = () => {
   }
 
   const getProductImages = () => {
-    // 如果产品有图片，使用产品图片
-    if (product.image && product.image.length > 0) {
-      return product.image.map(img => `${BASE_URL}${img.url}`);
-    }
+    // Temporarily use placeholder images since images property doesn't exist
+    // if (product.images && product.images.length > 0) {
+    //   return product.images.map(img => `http://192.168.31.130:1337${img.url}`);
+    // }
     // 默认图片
     return [
       'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=600&h=400&fit=crop',
@@ -91,21 +88,24 @@ const ProductDetail: React.FC = () => {
   const productImages = getProductImages();
 
   const specifications = [
-    // 使用新添加的属性
-    // { label: '产品名称', value: product.product_name, icon: Cpu },
-    // { label: '产品ID', value: product.id.toString(), icon: HardDrive },
-    // { label: '发布状态', value: product.faBuStatus, icon: Zap },
-    { label: 'CPU类型', value: product.cpuLeiXing, icon: Cpu },
-    { label: '内存', value: product.neiCun, icon: HardDrive },
-    { label: '网卡', value: product.wangKa, icon: Wifi },
-    { label: '显示接口', value: product.xianShiJieKou, icon: Monitor },
-    { label: '电源类型', value: product.powerType, icon: Zap },
-    { label: '操作系统', value: product.operating_system, icon: Package },
-    { label: '工作温度', value: product.operating_temperature, icon: Thermometer },
+    // Temporarily disabled - these properties don't exist in ProductInfo interface
+    // { label: 'CPU', value: product.cpu, icon: Cpu },
+    // { label: '内存', value: product.memory, icon: HardDrive },
+    // { label: '存储', value: product.storage, icon: HardDrive },
+    // { label: '功耗', value: product.power_consumption, icon: Zap },
+    // { label: '工作温度', value: product.operating_temperature, icon: Thermometer },
+    // { label: '网络接口', value: product.network_interfaces, icon: Wifi },
+    // { label: '显示接口', value: product.display_interfaces, icon: Monitor },
+    // { label: '尺寸', value: product.dimensions, icon: Package }
+    
+    // Add some default specs based on available data
+    { label: '产品名称', value: product.product_name, icon: Cpu },
+    { label: '产品ID', value: product.id.toString(), icon: HardDrive },
+    { label: '发布状态', value: product.faBuStatus, icon: Zap },
   ].filter(spec => spec.value);
 
   const tabs = [
-    { id: 'images', label: '产品详情', icon: ImageIcon },
+    { id: 'images', label: '宣传图', icon: ImageIcon },
     { id: 'specs', label: '规格书', icon: FileText },
     { id: 'applications', label: '应用场景', icon: Settings },
     { id: 'downloads', label: '附件下载', icon: Download }
@@ -233,12 +233,10 @@ const ProductDetail: React.FC = () => {
                 <h3 className="text-lg font-semibold text-dark-800 mb-4">核心参数</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {specifications.slice(0, 6).map((spec, index) => {
-                    const IconComponent = spec.icon || Cpu; // 提供默认图标
+                    const IconComponent = spec.icon;
                     return (
                       <div key={index} className="flex items-center">
-                        <div className="w-5 h-5 flex-shrink-0 mr-3">
-                          <IconComponent className="w-full h-full text-accent-600" />
-                        </div>
+                        <IconComponent className="w-5 h-5 text-accent-600 mr-3" />
                         <span className="font-medium text-gray-700 mr-2">{spec.label}:</span>
                         <span className="text-gray-600">{spec.value}</span>
                       </div>
@@ -269,7 +267,7 @@ const ProductDetail: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8 overflow-x-auto">
             {tabs.map((tab) => {
-              const IconComponent = tab.icon || ImageIcon; // 提供默认图标
+              const IconComponent = tab.icon;
               return (
                 <button
                   key={tab.id}
@@ -280,9 +278,7 @@ const ProductDetail: React.FC = () => {
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
-                  <div className="w-5 h-5 mr-2 flex-shrink-0">
-                    <IconComponent className="w-full h-full" />
-                  </div>
+                  <IconComponent className="w-5 h-5 mr-2" />
                   {tab.label}
                 </button>
               );
@@ -298,29 +294,21 @@ const ProductDetail: React.FC = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-6"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             >
-              {product.full_description ? (
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden p-6">
-                  <div dangerouslySetInnerHTML={{ __html: product.full_description.replace(/src=\"\//g, `src=\"${BASE_URL}/`) }} />
+              {productImages.map((image, index) => (
+                <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden">
+                  <img
+                    src={image}
+                    alt={`${product.product_name} 宣传图 ${index + 1}`}
+                    className="w-full h-64 object-cover"
+                  />
+                  <div className="p-4">
+                    <h4 className="font-medium text-dark-800">产品图片 {index + 1}</h4>
+                    <p className="text-sm text-gray-600 mt-1">高清产品展示图</p>
+                  </div>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {productImages.map((image, index) => (
-                    <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden">
-                      <img
-                        src={image}
-                        alt={`${product.product_name} 宣传图 ${index + 1}`}
-                        className="w-full h-64 object-cover"
-                      />
-                      <div className="p-4">
-                        <h4 className="font-medium text-dark-800">产品图片 {index + 1}</h4>
-                        <p className="text-sm text-gray-600 mt-1">高清产品展示图</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              ))}
             </motion.div>
           )}
 
@@ -336,14 +324,12 @@ const ProductDetail: React.FC = () => {
                   <table className="w-full">
                     <tbody className="divide-y divide-gray-200">
                       {specifications.map((spec, index) => {
-                        const IconComponent = spec.icon || Cpu; // 提供默认图标
+                        const IconComponent = spec.icon;
                         return (
                           <tr key={index} className="hover:bg-gray-50">
                             <td className="py-4 pr-6">
                               <div className="flex items-center">
-                                <div className="w-5 h-5 flex-shrink-0 mr-3">
-                                  <IconComponent className="w-full h-full text-accent-600" />
-                                </div>
+                                <IconComponent className="w-5 h-5 text-accent-600 mr-3" />
                                 <span className="font-medium text-gray-900">{spec.label}</span>
                               </div>
                             </td>

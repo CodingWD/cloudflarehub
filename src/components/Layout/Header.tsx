@@ -1,17 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ApiService, ProductCategory } from '../../services/api';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+  const [isProductsOpen, setIsProductsOpen] = useState(false);
   const location = useLocation();
-  // const [productCategories, setProductCategories] = useState<ProductCategory[]>([]);
 
-  // 基本导航菜单
-  const [navigation, setNavigation] = useState([
+  const navigation = [
     { name: '首页', href: '/' },
     { 
       name: '产品中心', 
@@ -26,41 +23,7 @@ const Header: React.FC = () => {
     { name: '新闻动态', href: '/news' },
     { name: '下载专区', href: '/downloads' },
     { name: '样品申请', href: '/sample-request' },
-  ]);
-
-  // 获取产品分类
-  useEffect(() => {
-    const fetchProductCategories = async () => {
-      try {
-        const categories = await ApiService.getProductCategories();
-        console.log('导航栏获取产品分类:', categories);
-        
-        // 更新产品中心的子菜单
-        setNavigation(prev => {
-          return prev.map(item => {
-            if (item.name === '产品中心') {
-              return {
-                ...item,
-                submenu: [
-                  { name: '产品分类', href: '/products/categories' },
-                  { name: '产品列表', href: '/products' },
-                  ...categories.map((cat: ProductCategory) => ({
-                    name: cat.name,
-                    href: `/products/category/${cat.id}`
-                  }))
-                ]
-              };
-            }
-            return item;
-          });
-        });
-      } catch (error) {
-        console.error('获取产品分类失败:', error);
-      }
-    };
-
-    fetchProductCategories();
-  }, []);
+  ];
 
   const isActive = (href: string) => {
     if (href === '/') {
@@ -88,8 +51,8 @@ const Header: React.FC = () => {
                 {item.submenu ? (
                   <div
                     className="flex items-center space-x-1 cursor-pointer"
-                    onMouseEnter={() => setOpenSubmenu(item.name)}
-                    onMouseLeave={() => setOpenSubmenu(null)}
+                    onMouseEnter={() => setIsProductsOpen(true)}
+                    onMouseLeave={() => setIsProductsOpen(false)}
                   >
                     <Link
                       to={item.href}
@@ -105,7 +68,7 @@ const Header: React.FC = () => {
                     
                     {/* Submenu */}
                     <AnimatePresence>
-                      {openSubmenu === item.name && (
+                      {isProductsOpen && (
                         <motion.div
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}

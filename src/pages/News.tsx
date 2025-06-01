@@ -3,11 +3,6 @@ import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, User, ArrowRight, Search, Filter, ChevronLeft } from 'lucide-react';
 import { ApiService, NewsArticle } from '../services/api';
-import ReactMarkdown from 'react-markdown';
-import rehypeRaw from 'rehype-raw';
-import { Components } from 'react-markdown';
-
-const BASE_URL = 'http://192.168.31.177:1337';
 
 const News: React.FC = () => {
   const [news, setNews] = useState<NewsArticle[]>([]);
@@ -30,24 +25,13 @@ const News: React.FC = () => {
     fetchNews();
   }, []);
 
-  // 定义分类映射，用于将fenlei属性值映射到显示名称
-  const categoryMapping: { [key: string]: string } = {
-    'a产品发布': '产品发布',
-    'b行业动态': '行业动态',
-    'c技术分享': '技术分享',
-    'd公司新闻': '公司新闻'
-  };
-  
   const categories = ['全部', '产品发布', '行业动态', '技术分享', '公司新闻'];
 
   const filteredNews = news.filter(article => {
     const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      article.content.toLowerCase().includes(searchTerm.toLowerCase());
-    // 使用fenlei属性进行分类筛选
-    const matchesCategory = selectedCategory === '' || selectedCategory === '全部' || 
-      (article.fenlei && Object.entries(categoryMapping).some(([key, value]) => 
-        key === article.fenlei && value === selectedCategory
-      ));
+                         article.content.toLowerCase().includes(searchTerm.toLowerCase());
+    // Category filter temporarily disabled - no category field in NewsArticle
+    const matchesCategory = selectedCategory === '' || selectedCategory === '全部';
     return matchesSearch && matchesCategory;
   });
 
@@ -179,7 +163,7 @@ const News: React.FC = () => {
                     {/* Article Image */}
                     <div className="lg:w-80 h-64 lg:h-auto bg-gray-200 flex-shrink-0">
                       <img
-                        src={article.firstImageUrl || `https://images.unsplash.com/photo-${1550000000000 + index}?w=400&h=300&fit=crop`}
+                        src={`https://images.unsplash.com/photo-${1550000000000 + index}?w=400&h=300&fit=crop`}
                         alt={article.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => {
@@ -192,11 +176,13 @@ const News: React.FC = () => {
                     {/* Article Content */}
                     <div className="flex-1 p-8">
                       <div className="flex items-center gap-4 mb-4">
-                        {article.fenlei && categoryMapping[article.fenlei] && (
-                          <span className={`px-3 py-1 text-xs font-medium rounded-full ${getCategoryColor(categoryMapping[article.fenlei])}`}>
-                            {categoryMapping[article.fenlei]}
+                        {/* Category temporarily disabled - no category field in NewsArticle
+                        {article.category && (
+                          <span className={`px-3 py-1 text-xs font-medium rounded-full ${getCategoryColor(article.category)}`}>
+                            {article.category}
                           </span>
                         )}
+                        */}
                         <div className="flex items-center text-sm text-gray-500">
                           <Calendar className="w-4 h-4 mr-1" />
                           {formatDate(article.publishedAt)}
@@ -214,7 +200,7 @@ const News: React.FC = () => {
                       </h2>
 
                       <p className="text-gray-600 mb-6 leading-relaxed">
-                        {article.jianjie || getExcerpt(article.content)}
+                        {getExcerpt(article.content)}
                       </p>
 
                       <div className="flex items-center justify-between">
@@ -222,7 +208,7 @@ const News: React.FC = () => {
                           <Clock className="w-4 h-4 mr-1" />
                           预计阅读时间: {Math.ceil(article.content.length / 500)} 分钟
                         </div>
-
+                        
                         <Link
                           to={`/news/${article.documentId}`}
                           className="inline-flex items-center text-accent-600 hover:text-accent-700 font-medium group-hover:translate-x-1 transition-all duration-200"
@@ -280,12 +266,12 @@ export const NewsDetail: React.FC = () => {
   useEffect(() => {
     const fetchArticle = async () => {
       if (!id) return;
-
+      
       try {
         // 模拟获取单篇文章详情
         const allNews = await ApiService.getNewsArticles();
         const foundArticle = allNews.find(news => news.documentId === id);
-
+        
         if (foundArticle) {
           setArticle(foundArticle);
           // 获取相关文章（同分类的其他文章）- temporarily disabled
@@ -394,45 +380,23 @@ export const NewsDetail: React.FC = () => {
                   {'研响科技'}
                 </div>
               </div>
-
+              
               <h1 className="text-3xl md:text-4xl font-bold text-dark-800 mb-4">{article.title}</h1>
-
+              
               <div className="flex items-center text-sm text-gray-500">
                 <Clock className="w-4 h-4 mr-1" />
                 预计阅读时间: {Math.ceil(article.content.length / 500)} 分钟
               </div>
             </div>
-            
+
+            {/* Article Body */}
             <div className="p-8">
               <div className="prose prose-lg max-w-none">
-                <ReactMarkdown
-                  rehypePlugins={[rehypeRaw]}
-                  components={{
-                    img: ({ node, ...props }: any) => (
-                      <img
-                        {...props}
-                        className="max-w-full h-auto rounded-lg mx-auto my-6"
-                        src={props.src?.replace('http://localhost:1337', BASE_URL) || ''}
-                        alt={props.alt || '文章图片'} // 添加alt属性,如果没有则使用默认值
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=400&fit=crop';
-                        }}
-                      />
-                    ),
-                    a: ({ node, ...props }: any) => (
-                      <a
-                        {...props}
-                        className="text-accent-600 hover:text-accent-700 underline"
-                        target="_blank"
-                        aria-label={`在新窗口打开链接: ${props.children}`}
-                        rel="noopener noreferrer"
-                      />
-                    ),
-                  }}
-                >
-                  {article.content}
-                </ReactMarkdown>
+                {article.content.split('\n').map((paragraph, index) => (
+                  <p key={index} className="mb-4 text-gray-700 leading-relaxed">
+                    {paragraph}
+                  </p>
+                ))}
               </div>
             </div>
           </motion.div>
@@ -454,7 +418,7 @@ export const NewsDetail: React.FC = () => {
                     className="bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden group"
                   >
                     <img
-                      src={relatedArticle.firstImageUrl || `https://images.unsplash.com/photo-1550000000000?w=400&h=200&fit=crop`}
+                      src={`https://images.unsplash.com/photo-1550000000000?w=400&h=200&fit=crop`}
                       alt={relatedArticle.title}
                       className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-300"
                       onError={(e) => {
