@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Download, FileText, Image, Video, Archive, Search, Filter, Calendar, Eye, ExternalLink } from 'lucide-react';
+import ApiService, { DownloadCenterItem } from '../services/api';
 
 interface DownloadItem {
   id: number;
   title: string;
   description: string;
-  fileType: 'pdf' | 'image' | 'video' | 'archive' | 'document';
+  fileType?: 'pdf' | 'image' | 'video' | 'archive' | 'document';
   category: string;
   version: string;
-  size: string;
-  downloadUrl: string;
+  size?: string;
+  downloadUrl?: string;
   previewUrl?: string;
   uploadDate: string;
-  downloadCount: number;
+  downloadCount?: number;
 }
 
 const Downloads: React.FC = () => {
@@ -23,117 +24,96 @@ const Downloads: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedFileType, setSelectedFileType] = useState('');
 
-  // 模拟下载数据
+  // 从API获取下载数据
   useEffect(() => {
-    const mockDownloads: DownloadItem[] = [
-      {
-        id: 1,
-        title: 'YX-IPC-3000 产品规格书',
-        description: '详细的技术规格和参数说明，包含接口定义、性能指标等',
-        fileType: 'pdf',
-        category: '产品规格书',
-        version: 'v2.1',
-        size: '2.3 MB',
-        downloadUrl: '/downloads/yx-ipc-3000-specs.pdf',
-        previewUrl: '/preview/yx-ipc-3000-specs',
-        uploadDate: '2024-01-15',
-        downloadCount: 1250
-      },
-      {
-        id: 2,
-        title: 'YX-IPC-5000 安装指南',
-        description: '完整的安装步骤和配置说明，适用于工程师和技术人员',
-        fileType: 'pdf',
-        category: '安装指南',
-        version: 'v1.8',
-        size: '4.7 MB',
-        downloadUrl: '/downloads/yx-ipc-5000-install.pdf',
-        uploadDate: '2024-01-10',
-        downloadCount: 890
-      },
-      {
-        id: 3,
-        title: '工控机选型指南',
-        description: '帮助客户根据应用场景选择合适的工控机产品',
-        fileType: 'pdf',
-        category: '选型指南',
-        version: 'v3.0',
-        size: '1.8 MB',
-        downloadUrl: '/downloads/selection-guide.pdf',
-        uploadDate: '2024-01-08',
-        downloadCount: 2100
-      },
-      {
-        id: 4,
-        title: '产品宣传册',
-        description: '公司全系列产品介绍和应用案例展示',
-        fileType: 'pdf',
-        category: '宣传资料',
-        version: 'v2024.1',
-        size: '8.5 MB',
-        downloadUrl: '/downloads/product-brochure.pdf',
-        uploadDate: '2024-01-05',
-        downloadCount: 3200
-      },
-      {
-        id: 5,
-        title: 'CAD 设计图纸包',
-        description: '包含主要产品的CAD设计图纸，支持二次开发',
-        fileType: 'archive',
-        category: '设计资料',
-        version: 'v1.5',
-        size: '15.2 MB',
-        downloadUrl: '/downloads/cad-drawings.zip',
-        uploadDate: '2024-01-03',
-        downloadCount: 560
-      },
-      {
-        id: 6,
-        title: '产品演示视频',
-        description: '工控机产品功能演示和应用场景介绍视频',
-        fileType: 'video',
-        category: '演示视频',
-        version: 'v1.0',
-        size: '125 MB',
-        downloadUrl: '/downloads/product-demo.mp4',
-        previewUrl: '/preview/product-demo',
-        uploadDate: '2023-12-28',
-        downloadCount: 780
-      },
-      {
-        id: 7,
-        title: '驱动程序包',
-        description: '适用于Windows和Linux系统的驱动程序',
-        fileType: 'archive',
-        category: '驱动程序',
-        version: 'v4.2.1',
-        size: '45.8 MB',
-        downloadUrl: '/downloads/drivers.zip',
-        uploadDate: '2023-12-25',
-        downloadCount: 1890
-      },
-      {
-        id: 8,
-        title: '质量认证证书',
-        description: 'ISO9001、CE、FCC等质量认证证书',
-        fileType: 'pdf',
-        category: '认证证书',
-        version: 'v2023',
-        size: '3.2 MB',
-        downloadUrl: '/downloads/certificates.pdf',
-        uploadDate: '2023-12-20',
-        downloadCount: 450
+    const fetchDownloadItems = async () => {
+      try {
+        setLoading(true);
+        const downloadItems = await ApiService.getDownloadItems();
+        
+        // 将DownloadCenterItem转换为DownloadItem格式
+        const formattedItems: DownloadItem[] = downloadItems.map(item => ({
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          fileType: item.fileType as 'pdf' | 'image' | 'video' | 'archive' | 'document',
+          category: item.category,
+          version: item.version,
+          size: item.fileSize,
+          downloadUrl: item.fileUrl,
+          // 暂时没有预览URL，可以根据需要添加
+          previewUrl: item.fileType === 'pdf' || item.fileType === 'image' || item.fileType === 'video' ? item.fileUrl : undefined,
+          uploadDate: item.published_date || item.publishedAt,
+          // downloadCount: 0 // 暂时没有下载次数统计，默认为0
+        }));
+        
+        setDownloads(formattedItems);
+      } catch (error) {
+        console.error('获取下载项目失败:', error);
+        // 如果API调用失败，使用模拟数据作为后备
+        const mockDownloads: DownloadItem[] = [
+          {
+            id: 1,
+            title: 'YX-IPC-3000 产品规格书',
+            description: '详细的技术规格和参数说明，包含接口定义、性能指标等',
+            fileType: 'pdf',
+            category: '产品规格书',
+            version: 'v2.1',
+            size: '2.3 MB',
+            downloadUrl: '/downloads/yx-ipc-3000-specs.pdf',
+            previewUrl: '/preview/yx-ipc-3000-specs',
+            uploadDate: '2024-01-15',
+            downloadCount: 1250
+          },
+          {
+            id: 2,
+            title: 'YX-IPC-5000 安装指南',
+            description: '完整的安装步骤和配置说明，适用于工程师和技术人员',
+            fileType: 'pdf',
+            category: '安装指南',
+            version: 'v1.8',
+            size: '4.7 MB',
+            downloadUrl: '/downloads/yx-ipc-5000-install.pdf',
+            uploadDate: '2024-01-10',
+            downloadCount: 890
+          },
+          {
+            id: 3,
+            title: '工控机选型指南',
+            description: '帮助客户根据应用场景选择合适的工控机产品',
+            fileType: 'pdf',
+            category: '选型指南',
+            version: 'v3.0',
+            size: '1.8 MB',
+            downloadUrl: '/downloads/selection-guide.pdf',
+            uploadDate: '2024-01-08',
+            downloadCount: 2100
+          },
+          {
+            id: 4,
+            title: '产品宣传册',
+            description: '公司全系列产品介绍和应用案例展示',
+            fileType: 'pdf',
+            category: '宣传资料',
+            version: 'v2024.1',
+            size: '8.5 MB',
+            downloadUrl: '/downloads/product-brochure.pdf',
+            uploadDate: '2024-01-05',
+            downloadCount: 3200
+          }
+        ];
+        setDownloads(mockDownloads);
+      } finally {
+        setLoading(false);
       }
-    ];
+    };
 
-    // 模拟API调用延迟
-    setTimeout(() => {
-      setDownloads(mockDownloads);
-      setLoading(false);
-    }, 1000);
+    fetchDownloadItems();
   }, []);
 
-  const categories = ['全部', '产品规格书', '安装指南', '选型指南', '宣传资料', '设计资料', '演示视频', '驱动程序', '认证证书'];
+  // 从下载项目中提取唯一的分类列表
+  const uniqueCategories = ['全部', ...Array.from(new Set(downloads.map(item => item.category)))];
+  const categories = uniqueCategories;
   const fileTypes = ['全部', 'pdf', 'image', 'video', 'archive', 'document'];
 
   const filteredDownloads = downloads.filter(item => {
@@ -146,7 +126,7 @@ const Downloads: React.FC = () => {
     return matchesSearch && matchesCategory && matchesFileType;
   });
 
-  const getFileIcon = (fileType: string) => {
+  const getFileIcon = (fileType?: string) => {
     switch (fileType) {
       case 'pdf':
       case 'document':
@@ -162,7 +142,7 @@ const Downloads: React.FC = () => {
     }
   };
 
-  const getFileTypeColor = (fileType: string) => {
+  const getFileTypeColor = (fileType?: string) => {
     switch (fileType) {
       case 'pdf':
       case 'document':
@@ -186,7 +166,8 @@ const Downloads: React.FC = () => {
     });
   };
 
-  const formatDownloadCount = (count: number) => {
+  const formatDownloadCount = (count?: number) => {
+    if (!count) return '0';
     if (count >= 1000) {
       return `${(count / 1000).toFixed(1)}k`;
     }
@@ -194,17 +175,24 @@ const Downloads: React.FC = () => {
   };
 
   const handleDownload = (item: DownloadItem) => {
-    // 模拟下载
-    console.log('下载文件:', item.title);
-    // 在实际应用中，这里会触发文件下载
-    // window.open(item.downloadUrl, '_blank');
+    if (item.downloadUrl) {
+      console.log('下载文件:', item.title);
+      // 触发文件下载
+      window.open(item.downloadUrl, '_blank');
+    } else {
+      console.error('下载链接不存在:', item.title);
+      // 可以添加提示用户的逻辑
+    }
   };
 
   const handlePreview = (item: DownloadItem) => {
     if (item.previewUrl) {
       console.log('预览文件:', item.title);
-      // 在实际应用中，这里会打开预览窗口
-      // window.open(item.previewUrl, '_blank');
+      // 打开预览窗口
+      window.open(item.previewUrl, '_blank');
+    } else {
+      console.error('预览链接不存在:', item.title);
+      // 可以添加提示用户的逻辑
     }
   };
 
@@ -342,18 +330,18 @@ const Downloads: React.FC = () => {
                               <span className="font-medium">版本:</span>
                               <span className="ml-1">{item.version}</span>
                             </div>
-                            <div className="flex items-center">
+                            {/* <div className="flex items-center">
                               <span className="font-medium">大小:</span>
                               <span className="ml-1">{item.size}</span>
-                            </div>
+                            </div> */}
                             <div className="flex items-center">
                               <Calendar className="w-4 h-4 mr-1" />
                               {formatDate(item.uploadDate)}
                             </div>
-                            <div className="flex items-center">
+                            {/* <div className="flex items-center">
                               <Download className="w-4 h-4 mr-1" />
                               {formatDownloadCount(item.downloadCount)} 次下载
-                            </div>
+                            </div> */}
                           </div>
                         </div>
 

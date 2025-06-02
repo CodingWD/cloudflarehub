@@ -51,6 +51,14 @@ export interface ProductInfo {
       large?: { url: string }; 
     }; 
   }>; 
+  downloads?: Array<{ 
+    id: number; 
+    name: string; 
+    url: string; 
+    size?: number; 
+    mime?: string; 
+    ext?: string; 
+  }>; 
   productImageUrl?: string; // 用于存储处理后的图片URL 
 }
 
@@ -92,6 +100,79 @@ export interface NewsArticle {
   faburiqi?: string;
   fenlei?: string;
   shifoufabu?: string;
+}
+
+// 下载中心项目接口
+export interface DownloadCenterItem {
+  id: number;
+  documentId: string;
+  title: string;           // 文件标题
+  description: string;     // 文件描述
+  slug: string;            // UID
+  category: string;        // 文件分类
+  version: string;         // 文件版本
+  published_date: string;  // 发布日期
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+  file?: {
+    id: number;
+    name: string;
+    url: string;
+    size: number;
+    mime: string;
+    ext: string;
+  };
+  fileUrl?: string;        // 处理后的文件URL
+  fileSize?: string;       // 格式化后的文件大小
+  fileType?: string;       // 文件类型（根据mime类型判断）
+}
+
+// 公司信息接口
+export interface Company {
+  id: number;
+  documentId: string;
+  name: string;            // 公司名称
+  address: string;         // 公司地址
+  email: string;           // 公司邮箱
+  phone: string;           // 公司电话
+  beiyongPhone?: string;   // 备用电话
+  work_time?: string;      // 工作时间
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+  video?: {
+    id: number;
+    name: string;
+    url: string;
+    mime: string;
+    ext: string;
+  };
+  erWeima?: {
+    id: number;
+    name: string;
+    url: string;
+    formats?: {
+      thumbnail?: { url: string };
+      small?: { url: string };
+      medium?: { url: string };
+      large?: { url: string };
+    };
+  };
+  logo?: {
+    id: number;
+    name: string;
+    url: string;
+    formats?: {
+      thumbnail?: { url: string };
+      small?: { url: string };
+      medium?: { url: string };
+      large?: { url: string };
+    };
+  };
+  videoUrl?: string;       // 处理后的视频URL
+  erWeimaUrl?: string;     // 处理后的二维码URL
+  logoUrl?: string;        // 处理后的logo URL
 }
 
 // API响应接口
@@ -271,6 +352,111 @@ export class ApiService {
     } catch (error) {
       console.error('提交定制化需求失败:', error);
       throw error;
+    }
+  }
+
+  // 获取下载中心项目
+  static async getDownloadItems(): Promise<DownloadCenterItem[]> {
+    try {
+      const response = await api.get<ApiResponse<DownloadCenterItem>>('/api/download-center-items?populate=file');
+      
+      // 处理每个下载项，添加文件URL和类型信息
+      const downloadItems = response.data.data.map(item => {
+        let fileUrl: string | undefined = undefined;
+        let fileSize: string | undefined = undefined;
+        let fileType: string | undefined = undefined;
+        
+        // 如果有文件，处理文件信息
+        if (item.file) {
+          fileUrl = `${BASE_URL}${item.file.url}`;
+          
+          // 格式化文件大小
+          const size = item.file.size;
+          if (size < 1024) {
+            fileSize = `${size} B`;
+          } else if (size < 1024 * 1024) {
+            fileSize = `${(size / 1024).toFixed(1)} KB`;
+          } else {
+            fileSize = `${(size / (1024 * 1024)).toFixed(1)} MB`;
+          }
+          
+          // 根据mime类型判断文件类型
+          const mime = item.file.mime;
+          if (mime.includes('pdf')) {
+            fileType = 'pdf';
+          } else if (mime.includes('image')) {
+            fileType = 'image';
+          } else if (mime.includes('video')) {
+            fileType = 'video';
+          } else if (mime.includes('zip') || mime.includes('rar') || mime.includes('tar') || mime.includes('7z')) {
+            fileType = 'archive';
+          } else if (mime.includes('word') || mime.includes('excel') || mime.includes('powerpoint') || mime.includes('text')) {
+            fileType = 'document';
+          } else {
+            fileType = 'document'; // 默认为文档类型
+          }
+        }
+        
+        return {
+          ...item,
+          fileUrl,
+          fileSize,
+          fileType
+        };
+      });
+      
+      return downloadItems;
+    } catch (error) {
+      console.error('获取下载中心项目失败:', error);
+      throw error;
+    }
+  }
+
+  // 获取公司信息
+  static async getCompanyInfo(): Promise<Company | null> {
+    try {
+      // 使用正确的API路径格式
+      const response = await api.get<ApiResponse<Company>>('/api/companies?populate=*');
+      
+      // 如果没有数据，返回null
+      if (!response.data.data.length) {
+        return null;
+      }
+      
+      const company = response.data.data[0];
+      
+      // 处理视频URL
+      if (company.video) {
+        company.videoUrl = `${BASE_URL}${company.video.url}`;
+      }
+      
+      // 处理二维码URL
+      if (company.erWeima) {
+        company.erWeimaUrl = `${BASE_URL}${company.erWeima.url}`;
+      }
+      
+      // 处理Logo URL
+      if (company.logo) {
+        company.logoUrl = `${BASE_URL}${company.logo.url}`;
+      }
+      
+      return company;
+    } catch (error) {
+      console.error('获取公司信息失败:', error);
+      // 返回模拟数据作为后备
+      return {
+        id: 1,
+        documentId: 'mock-company',
+        name: '深圳市研响科技有限公司',
+        address: '深圳市南山区科技园南区高新南七道数字技术大厦A座12楼',
+        email: 'contact@yanxiangtech.com',
+        phone: '0755-12345678',
+        beiyongPhone: '0755-87654321',
+        work_time: '周一至周五 9:00-18:00',
+        createdAt: '2023-01-01T00:00:00.000Z',
+        updatedAt: '2023-01-01T00:00:00.000Z',
+        publishedAt: '2023-01-01T00:00:00.000Z'
+      };
     }
   }
 }

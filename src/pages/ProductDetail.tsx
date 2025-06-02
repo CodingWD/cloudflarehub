@@ -185,7 +185,7 @@ const ProductDetail: React.FC = () => {
 
   const tabs = [
     { id: 'images', label: '产品详情', icon: ImageIcon },
-    { id: 'specs', label: '规格书', icon: FileText },
+    { id: 'specs', label: '技术规格', icon: FileText },
     { id: 'applications', label: '应用场景', icon: Settings },
     { id: 'downloads', label: '附件下载', icon: Download }
   ];
@@ -208,36 +208,47 @@ const ProductDetail: React.FC = () => {
     }
   ];
 
-  const downloadFiles = [
-    {
-      name: '产品规格书',
-      type: 'PDF',
-      size: '2.5 MB',
-      version: 'v1.2',
-      url: '#'
-    },
-    {
-      name: '驱动程序',
-      type: 'ZIP',
-      size: '15.8 MB',
-      version: 'v2.1.0',
-      url: '#'
-    },
-    {
-      name: '用户手册',
-      type: 'PDF',
-      size: '8.3 MB',
-      version: 'v1.0',
-      url: '#'
-    },
-    {
-      name: 'CAD图纸',
-      type: 'DWG',
-      size: '1.2 MB',
-      version: 'v1.0',
-      url: '#'
+  // 格式化文件大小
+  const formatFileSize = (bytes?: number): string => {
+    if (!bytes) return '未知大小';
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+  };
+
+  // 获取文件类型
+  const getFileType = (filename: string, mime?: string): string => {
+    if (mime) {
+      if (mime.includes('pdf')) return 'PDF';
+      if (mime.includes('zip') || mime.includes('rar')) return 'ZIP';
+      if (mime.includes('dwg')) return 'DWG';
+      if (mime.includes('doc')) return 'DOC';
+      if (mime.includes('excel') || mime.includes('spreadsheet')) return 'XLS';
     }
-  ];
+    const ext = filename.split('.').pop()?.toUpperCase();
+    return ext || 'FILE';
+  };
+
+  // 处理文件下载
+  const handleDownload = (file: any) => {
+    const downloadUrl = file.url.startsWith('http') ? file.url : `${BASE_URL}${file.url}`;
+    
+    // 创建临时a标签进行下载
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = file.name || 'download'; // 设置下载文件名
+    link.target = '_blank';
+    
+    // 添加到DOM并触发点击
+    document.body.appendChild(link);
+    link.click();
+    
+    // 清理DOM
+    document.body.removeChild(link);
+  };
+
+  // 获取下载文件列表
+  const downloadFiles = product?.downloads || [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -439,20 +450,23 @@ const ProductDetail: React.FC = () => {
                   </ReactMarkdown>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {productImages.map((image, index) => (
-                    <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden">
-                      <img
-                        src={image}
-                        alt={`${product.product_name} 宣传图 ${index + 1}`}
-                        className="w-full h-64 object-cover"
-                      />
-                      <div className="p-4">
-                        <h4 className="font-medium text-dark-800">产品图片 {index + 1}</h4>
-                        <p className="text-sm text-gray-600 mt-1">高清产品展示图</p>
+                <div>
+                  {/* <h3 className="text-2xl font-bold text-dark-800 mb-6">产品详情</h3> */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {productImages.map((image, index) => (
+                      <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <img
+                          src={image}
+                          alt={`${product.product_name} 宣传图 ${index + 1}`}
+                          className="w-full h-64 object-cover"
+                        />
+                        <div className="p-4">
+                          <h4 className="font-medium text-dark-800">产品图片 {index + 1}</h4>
+                          <p className="text-sm text-gray-600 mt-1">高清产品展示图</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </motion.div>
@@ -465,7 +479,7 @@ const ProductDetail: React.FC = () => {
               className="bg-white rounded-xl shadow-lg overflow-hidden"
             >
               <div className="p-6">
-                <h3 className="text-2xl font-bold text-dark-800 mb-6">技术规格</h3>
+                {/* <h3 className="text-2xl font-bold text-dark-800 mb-6">技术规格</h3> */}
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <tbody className="divide-y divide-gray-200">
@@ -499,7 +513,7 @@ const ProductDetail: React.FC = () => {
               className="space-y-8"
             >
               <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-dark-800 mb-4">应用场景</h3>
+                {/* <h3 className="text-2xl font-bold text-dark-800 mb-4">应用场景</h3> */}
                 <p className="text-lg text-gray-600">广泛应用于各种工业自动化和智能制造场景</p>
               </div>
 
@@ -528,28 +542,39 @@ const ProductDetail: React.FC = () => {
               className="bg-white rounded-xl shadow-lg overflow-hidden"
             >
               <div className="p-6">
-                <h3 className="text-2xl font-bold text-dark-800 mb-6">附件下载</h3>
-                <div className="space-y-4">
-                  {downloadFiles.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                      <div className="flex items-center">
-                        <div className="w-12 h-12 bg-accent-100 rounded-lg flex items-center justify-center mr-4">
-                          <FileText className="w-6 h-6 text-accent-600" />
+                {/* <h3 className="text-2xl font-bold text-dark-800 mb-6">附件下载</h3> */}
+                {downloadFiles.length > 0 ? (
+                  <div className="space-y-4">
+                    {downloadFiles.map((file, index) => (
+                      <div key={file.id || index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                        <div className="flex items-center">
+                          <div className="w-12 h-12 bg-accent-100 rounded-lg flex items-center justify-center mr-4">
+                            <FileText className="w-6 h-6 text-accent-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-dark-800">{file.name}</h4>
+                            <p className="text-sm text-gray-600">
+                              {getFileType(file.name, file.mime)} · {formatFileSize(file.size)}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <h4 className="font-medium text-dark-800">{file.name}</h4>
-                          <p className="text-sm text-gray-600">
-                            {file.type} · {file.size} · {file.version}
-                          </p>
-                        </div>
+                        <button 
+                          onClick={() => handleDownload(file)}
+                          className="flex items-center px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white font-medium rounded-lg transition-colors duration-200"
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          下载
+                        </button>
                       </div>
-                      <button className="flex items-center px-4 py-2 bg-accent-600 hover:bg-accent-700 text-white font-medium rounded-lg transition-colors duration-200">
-                        <Download className="w-4 h-4 mr-2" />
-                        下载
-                      </button>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                    <h4 className="text-lg font-medium text-gray-500 mb-2">暂无下载文件</h4>
+                    <p className="text-gray-400">该产品暂时没有可下载的附件文件</p>
+                  </div>
+                )}
               </div>
             </motion.div>
           )}

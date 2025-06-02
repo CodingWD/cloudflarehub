@@ -346,7 +346,7 @@ const Home: React.FC = () => {
             </Link>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {news.map((article, index) => (
               <motion.div
                 key={article.id}
@@ -354,25 +354,47 @@ const Home: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300 h-96 flex flex-col"
               >
-                <div className="p-6">
-                  <div className="text-sm text-accent-600 mb-2">
-                    {new Date(article.publishedAt).toLocaleDateString('zh-CN')}
+                {/* 图片部分 */}
+                <div className="h-48 overflow-hidden">
+                  {article.fengmiantu?.url ? (
+                    <img 
+                      src={article.firstImageUrl || `http://192.168.31.177:1337${article.fengmiantu.url}`}
+                      alt={article.title}
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-accent-100 to-accent-200 flex items-center justify-center">
+                      <div className="text-accent-600 text-4xl font-bold opacity-50">
+                        新闻
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* 内容部分 */}
+                <div className="p-6 flex flex-col flex-1">
+                  <div className="flex-1">
+                    <div className="text-sm text-accent-600 mb-2">
+                      {new Date(article.publishedAt).toLocaleDateString('zh-CN')}
+                    </div>
+                    <h3 className="text-lg font-semibold text-dark-800 mb-2 line-clamp-2">
+                      {article.title}
+                    </h3>
+                    <p className="text-gray-600 text-xs line-clamp-2 mb-3">
+                      {article.jianjie || article.excerpt || article.content}
+                    </p>
                   </div>
-                  <h3 className="text-lg font-semibold text-dark-800 mb-3 line-clamp-2">
-                    {article.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm line-clamp-3 mb-4">
-                    {article.excerpt || article.content}
-                  </p>
-                  <Link
-                    to={`/news/${article.documentId}`}
-                    className="text-accent-600 hover:text-accent-700 text-sm font-medium flex items-center"
-                  >
-                    阅读更多
-                    <ChevronRight className="ml-1 w-4 h-4" />
-                  </Link>
+                  <div className="mt-auto pt-2">
+                    <Link
+                      to={`/news/${article.documentId}`}
+                      className="text-accent-600 hover:text-accent-700 text-sm font-medium flex items-center"
+                    >
+                      了解更多
+                      <ChevronRight className="ml-1 w-4 h-4" />
+                    </Link>
+                  </div>
                 </div>
               </motion.div>
             ))}
