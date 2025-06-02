@@ -35,30 +35,30 @@ export interface ProductInfo {
   powerType?: string;   // 电源类型 文本
   operating_system?: string; // 操作系统 文本
   operating_temperature?: string; // 工作温度 文本
-  product_category?: { 
+  product_category?: {
     id: number;  // 后台自带
     name: string;  // 文本
     documentId: string;  // 实际不存在此属性
-  }; 
-  image?: Array<{ 
-    id: number; 
-    name: string; 
-    url: string; 
-    formats?: { 
-      thumbnail?: { url: string }; 
-      small?: { url: string }; 
-      medium?: { url: string }; 
-      large?: { url: string }; 
-    }; 
-  }>; 
-  downloads?: Array<{ 
-    id: number; 
-    name: string; 
-    url: string; 
-    size?: number; 
-    mime?: string; 
-    ext?: string; 
-  }>; 
+  };
+  image?: Array<{
+    id: number;
+    name: string;
+    url: string;
+    formats?: {
+      thumbnail?: { url: string };
+      small?: { url: string };
+      medium?: { url: string };
+      large?: { url: string };
+    };
+  }>;
+  downloads?: Array<{
+    id: number;
+    name: string;
+    url: string;
+    size?: number;
+    mime?: string;
+    ext?: string;
+  }>;
   productImageUrl?: string; // 用于存储处理后的图片URL 
 }
 
@@ -195,11 +195,11 @@ export class ApiService {
   static async getProductInfos(): Promise<ProductInfo[]> {
     try {
       const response = await api.get<ApiResponse<ProductInfo>>('/api/product-infos?populate=product_category&populate=image');
-      
+
       // 处理每个产品，添加图片URL
       const products = response.data.data.map(product => {
         let productImageUrl: string | undefined = undefined;
-        
+
         // 如果有图片，使用第一张图片的URL
         if (product.image && product.image.length > 0) {
           productImageUrl = `${BASE_URL}${product.image[0].url}`;
@@ -209,7 +209,7 @@ export class ApiService {
           productImageUrl
         };
       });
-      
+
       return products;
     } catch (error) {
       console.error('获取产品信息失败:', error);
@@ -222,12 +222,12 @@ export class ApiService {
     try {
       const response = await api.get<ApiResponse<ProductInfo>>(`/api/product-infos?filters[slug][$eq]=${slug}&populate=*`);
       const product = response.data.data[0] || null;
-      
+
       // 处理图片URL
       if (product && product.image && product.image.length > 0) {
         product.productImageUrl = `${BASE_URL}${product.image[0].url}`;
       }
-      
+
       return product;
     } catch (error) {
       console.error('获取产品详情失败:', error);
@@ -250,11 +250,11 @@ export class ApiService {
   static async getNewsArticles(limit: number = 10): Promise<NewsArticle[]> {
     try {
       const response = await api.get<ApiResponse<NewsArticle>>(`/api/news-articles?pagination[limit]=${limit}&sort=publishedAt:desc&populate=fengmiantu`);
-      
+
       // 处理每篇文章，优先使用fengmiantu字段，如果没有则提取第一张图片URL
       const articles = response.data.data.map(article => {
         let firstImageUrl: string | undefined = undefined;
-        
+
         // 优先使用fengmiantu字段
         if (article.fengmiantu && article.fengmiantu.url) {
           firstImageUrl = `${BASE_URL}${article.fengmiantu.url}`;
@@ -269,13 +269,13 @@ export class ApiService {
             firstImageUrl = imgUrl.replace('http://localhost:1337', BASE_URL);
           }
         }
-        
+
         return {
           ...article,
           firstImageUrl
         };
       });
-      
+
       return articles;
     } catch (error) {
       console.error('获取新闻文章失败:', error);
@@ -320,21 +320,34 @@ export class ApiService {
 
   // 提交样品申请
   static async submitSampleRequest(data: {
-    name: string;
-    phone: string;
-    email: string;
-    productModel: string;
-    timeline?: string;
-    requirements?: string;
-  }): Promise<boolean> {
+    name: string;        // 姓名
+    phone: string;       // 手机号码
+    email: string;       // 邮箱
+    companyname: string;     // 公司名称
+    sampleName: string;  // 样品名称
+    requiredDate: string; // 需求时间
+    requirements: string;  // 需求概述
+    urgency: 'normal' | 'urgent' | 'very_urgent'; // 紧急程度
+}): Promise<boolean> {
     try {
-      await api.post('/api/sample-requests', { data });
+      const mappedData = {
+        name: data.name,
+        phone: data.phone,
+        email: data.email,
+        companyname: data.companyname,
+        sampleName: data.sampleName,
+        requiredDate: data.requiredDate,
+        requirements: data.requirements,
+        urgency: data.urgency
+      };
+
+      await api.post('/api/sample-applications', { data: mappedData });
       return true;
     } catch (error) {
       console.error('提交样品申请失败:', error);
       throw error;
     }
-  }
+}
 
   // 提交定制化需求
   static async submitCustomRequest(data: {
@@ -359,17 +372,17 @@ export class ApiService {
   static async getDownloadItems(): Promise<DownloadCenterItem[]> {
     try {
       const response = await api.get<ApiResponse<DownloadCenterItem>>('/api/download-center-items?populate=file');
-      
+
       // 处理每个下载项，添加文件URL和类型信息
       const downloadItems = response.data.data.map(item => {
         let fileUrl: string | undefined = undefined;
         let fileSize: string | undefined = undefined;
         let fileType: string | undefined = undefined;
-        
+
         // 如果有文件，处理文件信息
         if (item.file) {
           fileUrl = `${BASE_URL}${item.file.url}`;
-          
+
           // 格式化文件大小
           const size = item.file.size;
           if (size < 1024) {
@@ -379,7 +392,7 @@ export class ApiService {
           } else {
             fileSize = `${(size / (1024 * 1024)).toFixed(1)} MB`;
           }
-          
+
           // 根据mime类型判断文件类型
           const mime = item.file.mime;
           if (mime.includes('pdf')) {
@@ -396,7 +409,7 @@ export class ApiService {
             fileType = 'document'; // 默认为文档类型
           }
         }
-        
+
         return {
           ...item,
           fileUrl,
@@ -404,7 +417,7 @@ export class ApiService {
           fileType
         };
       });
-      
+
       return downloadItems;
     } catch (error) {
       console.error('获取下载中心项目失败:', error);
@@ -417,29 +430,29 @@ export class ApiService {
     try {
       // 使用正确的API路径格式
       const response = await api.get<ApiResponse<Company>>('/api/companies?populate=*');
-      
+
       // 如果没有数据，返回null
       if (!response.data.data.length) {
         return null;
       }
-      
+
       const company = response.data.data[0];
-      
+
       // 处理视频URL
       if (company.video) {
         company.videoUrl = `${BASE_URL}${company.video.url}`;
       }
-      
+
       // 处理二维码URL
       if (company.erWeima) {
         company.erWeimaUrl = `${BASE_URL}${company.erWeima.url}`;
       }
-      
+
       // 处理Logo URL
       if (company.logo) {
         company.logoUrl = `${BASE_URL}${company.logo.url}`;
       }
-      
+
       return company;
     } catch (error) {
       console.error('获取公司信息失败:', error);

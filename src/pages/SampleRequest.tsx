@@ -7,7 +7,7 @@ interface SampleRequestForm {
   name: string;
   phone: string;
   email: string;
-  company: string;
+  companyname: string;
   position: string;
   sampleName: string;
   quantity: number;
@@ -23,7 +23,7 @@ const SampleRequest: React.FC = () => {
     name: '',
     phone: '',
     email: '',
-    company: '',
+    companyname: '',
     position: '',
     sampleName: '',
     quantity: 1,
@@ -64,11 +64,10 @@ const SampleRequest: React.FC = () => {
     if (!formData.email.trim()) newErrors.email = '请输入邮箱地址';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = '请输入有效的邮箱地址';
     
-    if (!formData.company.trim()) newErrors.company = '请输入公司名称';
+    if (!formData.companyname.trim()) newErrors.companyname = '请输入公司名称';
     if (!formData.sampleName.trim()) newErrors.sampleName = '请选择样品名称';
     if (!formData.requiredDate) newErrors.requiredDate = '请选择需求时间';
     if (!formData.requirements.trim()) newErrors.requirements = '请输入需求概述';
-    if (!formData.address.trim()) newErrors.address = '请输入收货地址';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -93,11 +92,8 @@ const SampleRequest: React.FC = () => {
     setSubmitStatus('idle');
 
     try {
-      // 模拟API调用
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // 在实际应用中，这里会调用API
-      // await ApiService.submitSampleRequest(formData);
+      // 实际API调用
+      await ApiService.submitSampleRequest(formData);
       
       setSubmitStatus('success');
       // 重置表单
@@ -105,7 +101,7 @@ const SampleRequest: React.FC = () => {
         name: '',
         phone: '',
         email: '',
-        company: '',
+        companyname: '',
         position: '',
         sampleName: '',
         quantity: 1,
@@ -158,7 +154,7 @@ const SampleRequest: React.FC = () => {
             className="bg-white rounded-xl shadow-lg overflow-hidden"
           >
             {/* Form Header */}
-            <div className="bg-gradient-to-r from-accent-600 to-accent-700 px-8 py-6">
+            <div className="bg-gradient-to-r from-accent-500 to-accent-700 px-8 py-6">
               <div className="flex items-center">
                 <Package className="w-8 h-8 text-white mr-3" />
                 <div>
@@ -222,7 +218,7 @@ const SampleRequest: React.FC = () => {
                     type="text"
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
-                    className={`w-full px-4 py-3 bg-gray-800 text-white rounded-lg border-0 focus:ring-2 focus:ring-accent-500 focus:outline-none ${
+                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none ${
                       errors.name ? 'ring-2 ring-red-500' : ''
                     }`}
                     placeholder="请输入您的姓名"
@@ -239,7 +235,7 @@ const SampleRequest: React.FC = () => {
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className={`w-full px-4 py-3 bg-gray-800 text-white rounded-lg border-0 focus:ring-2 focus:ring-accent-500 focus:outline-none ${
+                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none ${
                       errors.phone ? 'ring-2 ring-red-500' : ''
                     }`}
                     placeholder="请输入您的手机号码"
@@ -256,7 +252,7 @@ const SampleRequest: React.FC = () => {
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className={`w-full px-4 py-3 bg-gray-800 text-white rounded-lg border-0 focus:ring-2 focus:ring-accent-500 focus:outline-none ${
+                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none ${
                       errors.email ? 'ring-2 ring-red-500' : ''
                     }`}
                     placeholder="请输入您的邮箱地址"
@@ -271,28 +267,14 @@ const SampleRequest: React.FC = () => {
                   </label>
                   <input
                     type="text"
-                    value={formData.company}
-                    onChange={(e) => handleInputChange('company', e.target.value)}
-                    className={`w-full px-4 py-3 bg-gray-800 text-white rounded-lg border-0 focus:ring-2 focus:ring-accent-500 focus:outline-none ${
-                      errors.company ? 'ring-2 ring-red-500' : ''
+                    value={formData.companyname}
+    onChange={(e) => handleInputChange('companyname', e.target.value)}
+                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none ${
+                      errors.companyname ? 'ring-2 ring-red-500' : ''
                     }`}
                     placeholder="请输入您的公司名称"
                   />
-                  {errors.company && <p className="mt-1 text-sm text-red-500">{errors.company}</p>}
-                </div>
-
-                {/* 职位 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    职位
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.position}
-                    onChange={(e) => handleInputChange('position', e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg border-0 focus:ring-2 focus:ring-accent-500 focus:outline-none"
-                    placeholder="请输入您的职位"
-                  />
+                  {errors.companyname && <p className="mt-1 text-sm text-red-500">{errors.companyname}</p>}
                 </div>
 
                 {/* 样品信息 */}
@@ -311,7 +293,7 @@ const SampleRequest: React.FC = () => {
                   <select
                     value={formData.sampleName}
                     onChange={(e) => handleInputChange('sampleName', e.target.value)}
-                    className={`w-full px-4 py-3 bg-gray-800 text-white rounded-lg border-0 focus:ring-2 focus:ring-accent-500 focus:outline-none ${
+                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none ${
                       errors.sampleName ? 'ring-2 ring-red-500' : ''
                     }`}
                   >
@@ -325,22 +307,6 @@ const SampleRequest: React.FC = () => {
                   {errors.sampleName && <p className="mt-1 text-sm text-red-500">{errors.sampleName}</p>}
                 </div>
 
-                {/* 数量 */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    申请数量
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="5"
-                    value={formData.quantity}
-                    onChange={(e) => handleInputChange('quantity', parseInt(e.target.value) || 1)}
-                    className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg border-0 focus:ring-2 focus:ring-accent-500 focus:outline-none"
-                  />
-                  <p className="mt-1 text-sm text-gray-500">最多可申请5台样品</p>
-                </div>
-
                 {/* 需求时间 */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -351,7 +317,7 @@ const SampleRequest: React.FC = () => {
                     min={getMinDate()}
                     value={formData.requiredDate}
                     onChange={(e) => handleInputChange('requiredDate', e.target.value)}
-                    className={`w-full px-4 py-3 bg-gray-800 text-white rounded-lg border-0 focus:ring-2 focus:ring-accent-500 focus:outline-none ${
+                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none ${
                       errors.requiredDate ? 'ring-2 ring-red-500' : ''
                     }`}
                   />
@@ -366,7 +332,7 @@ const SampleRequest: React.FC = () => {
                   <select
                     value={formData.urgency}
                     onChange={(e) => handleInputChange('urgency', e.target.value as 'normal' | 'urgent' | 'very_urgent')}
-                    className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg border-0 focus:ring-2 focus:ring-accent-500 focus:outline-none"
+                    className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
                   >
                     {urgencyOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -374,20 +340,6 @@ const SampleRequest: React.FC = () => {
                       </option>
                     ))}
                   </select>
-                </div>
-
-                {/* 使用目的 */}
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    使用目的
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.purpose}
-                    onChange={(e) => handleInputChange('purpose', e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-800 text-white rounded-lg border-0 focus:ring-2 focus:ring-accent-500 focus:outline-none"
-                    placeholder="如：产品评估、项目测试、技术验证等"
-                  />
                 </div>
 
                 {/* 需求概述 */}
@@ -399,7 +351,7 @@ const SampleRequest: React.FC = () => {
                     rows={4}
                     value={formData.requirements}
                     onChange={(e) => handleInputChange('requirements', e.target.value)}
-                    className={`w-full px-4 py-3 bg-gray-800 text-white rounded-lg border-0 focus:ring-2 focus:ring-accent-500 focus:outline-none resize-none ${
+                    className={`w-full px-4 py-3  bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:outline-none resize-none ${
                       errors.requirements ? 'ring-2 ring-red-500' : ''
                     }`}
                     placeholder="请详细描述您的应用场景、技术要求、预期目标等"
@@ -416,7 +368,7 @@ const SampleRequest: React.FC = () => {
                     rows={3}
                     value={formData.address}
                     onChange={(e) => handleInputChange('address', e.target.value)}
-                    className={`w-full px-4 py-3 bg-gray-800 text-white rounded-lg border-0 focus:ring-2 focus:ring-accent-500 focus:outline-none resize-none ${
+                    className={`w-full px-4 py-3  bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:outline-none resize-none ${
                       errors.address ? 'ring-2 ring-red-500' : ''
                     }`}
                     placeholder="请输入详细的收货地址，包括省市区、街道、门牌号等"
@@ -430,7 +382,7 @@ const SampleRequest: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex items-center px-8 py-4 bg-dark-800 text-white font-medium rounded-lg hover:bg-dark-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="flex items-center px-8 py-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   {isSubmitting ? (
                     <>
@@ -459,7 +411,7 @@ const SampleRequest: React.FC = () => {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl font-bold text-dark-800 mb-4">样品申请流程</h2>
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">样品申请流程</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
               简单四步，快速获取产品样品
             </p>
@@ -501,14 +453,14 @@ const SampleRequest: React.FC = () => {
                 className="text-center"
               >
                 <div className="relative mb-6">
-                  <div className="w-16 h-16 bg-accent-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <item.icon className="w-8 h-8 text-white" />
                   </div>
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-dark-800 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-blue-700 text-white rounded-full flex items-center justify-center text-sm font-bold">
                     {item.step}
                   </div>
                 </div>
-                <h3 className="text-xl font-semibold text-dark-800 mb-2">{item.title}</h3>
+                <h3 className="text-xl font-semibold text-gray-800 mb-2">{item.title}</h3>
                 <p className="text-gray-600">{item.description}</p>
               </motion.div>
             ))}
@@ -524,21 +476,21 @@ const SampleRequest: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl font-bold text-dark-800 mb-4">需要帮助？</h2>
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">需要帮助？</h2>
             <p className="text-xl text-gray-600 mb-8">
               如有任何疑问，请随时联系我们的客服团队
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex items-center justify-center">
-                <Phone className="w-5 h-5 text-accent-600 mr-2" />
+                <Phone className="w-5 h-5 text-blue-500 mr-2" />
                 <span className="text-gray-700">400-123-4567</span>
               </div>
               <div className="flex items-center justify-center">
-                <Mail className="w-5 h-5 text-accent-600 mr-2" />
+                <Mail className="w-5 h-5 text-blue-500 mr-2" />
                 <span className="text-gray-700">sample@yxtech.com</span>
               </div>
               <div className="flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-accent-600 mr-2" />
+                <Calendar className="w-5 h-5 text-blue-500 mr-2" />
                 <span className="text-gray-700">工作日 9:00-18:00</span>
               </div>
             </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -16,13 +16,6 @@ import {
 } from 'lucide-react';
 import { ApiService, Company } from '../services/api';
 
-// 扩展Window接口以包含AMap
-declare global {
-  interface Window {
-    AMap: any;
-  }
-}
-
 const About: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -37,8 +30,6 @@ const About: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [companyInfo, setCompanyInfo] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
-  const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<any>(null);
 
   // 获取公司信息
   useEffect(() => {
@@ -56,99 +47,7 @@ const About: React.FC = () => {
     fetchCompanyInfo();
   }, []);
 
-  // 初始化高德地图
-  useEffect(() => {
-    // 确保AMap已加载且DOM元素已挂载
-    if (window.AMap && mapRef.current && companyInfo) {
-      // 使用地理编码服务将地址转换为经纬度坐标
-      const geocoder = new window.AMap.Geocoder();
-      const address = companyInfo.address || '深圳市南山区科技园南区高新南七道数字技术大厦A座12楼';
-      
-      geocoder.getLocation(address, (status: string, result: any) => {
-        if (status === 'complete' && result.info === 'OK') {
-          // 获取第一个地理编码结果的位置
-          const location = result.geocodes[0].location;
-          
-          // 创建地图实例
-          const map = new window.AMap.Map(mapRef.current, {
-            zoom: 15,  // 设置地图显示的缩放级别
-            center: [location.lng, location.lat]  // 使用地理编码获取的坐标
-          });
-          
-          // 保存地图实例以便清理
-          mapInstance.current = map;
-          
-          // 创建点标记
-          const marker = new window.AMap.Marker({
-            position: [location.lng, location.lat],  // 使用地理编码获取的坐标
-            title: companyInfo.name || '深圳市研响科技有限公司'  // 使用公司名称
-          });
-          
-          // 将点标记添加到地图
-          map.add(marker);
-          
-          // 添加信息窗体
-          const infoWindow = new window.AMap.InfoWindow({
-            content: `<div style="padding:10px;">
-                      <h3>${companyInfo.name || '深圳市研响科技有限公司'}</h3>
-                      <p>地址：${address}</p>
-                      <p>电话：${companyInfo.phone || '0755-12345678'}</p>
-                      ${companyInfo.email ? `<p>邮箱：${companyInfo.email}</p>` : ''}
-                      ${companyInfo.work_time ? `<p>工作时间：${companyInfo.work_time}</p>` : ''}
-                      </div>`,
-            offset: new window.AMap.Pixel(0, -30)
-          });
-          
-          // 点击标记时打开信息窗体
-          marker.on('click', function() {
-            infoWindow.open(map, marker.getPosition());
-          });
-        } else {
-          // 地理编码失败，使用默认坐标
-          console.error('地理编码失败:', status);
-          
-          // 创建地图实例（使用默认坐标）
-          const map = new window.AMap.Map(mapRef.current, {
-            zoom: 15,
-            center: [114.057868, 22.543099]  // 默认坐标
-          });
-          
-          mapInstance.current = map;
-          
-          // 创建点标记
-          const marker = new window.AMap.Marker({
-            position: [114.057868, 22.543099],
-            title: companyInfo.name || '深圳市研响科技有限公司'
-          });
-          
-          map.add(marker);
-          
-          // 添加信息窗体
-          const infoWindow = new window.AMap.InfoWindow({
-            content: `<div style="padding:10px;">
-                      <h3>${companyInfo.name || '深圳市研响科技有限公司'}</h3>
-                      <p>地址：${address}</p>
-                      <p>电话：${companyInfo.phone || '0755-12345678'}</p>
-                      ${companyInfo.email ? `<p>邮箱：${companyInfo.email}</p>` : ''}
-                      ${companyInfo.work_time ? `<p>工作时间：${companyInfo.work_time}</p>` : ''}
-                      </div>`,
-            offset: new window.AMap.Pixel(0, -30)
-          });
-          
-          marker.on('click', function() {
-            infoWindow.open(map, marker.getPosition());
-          });
-        }
-      });
-    }
-    
-    // 组件卸载时清理地图实例
-    return () => {
-      if (mapInstance.current) {
-        mapInstance.current.destroy();
-      }
-    };
-  }, [companyInfo]); // 当公司信息更新时重新初始化地图
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -442,12 +341,7 @@ const About: React.FC = () => {
             </div>
           )}
           
-          {/* Map */}
-          <div className="mt-12 rounded-xl overflow-hidden shadow-lg">
-            <div className="bg-gray-200 h-96 w-full" id="container" ref={mapRef}>
-              {/* 高德地图容器 */}
-            </div>
-          </div>
+
         </div>
       </section>
 
