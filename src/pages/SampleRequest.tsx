@@ -218,7 +218,7 @@ const SampleRequest: React.FC = () => {
                     type="text"
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
-                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none ${
+                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 focus:outline-none ${
                       errors.name ? 'ring-2 ring-red-500' : ''
                     }`}
                     placeholder="请输入您的姓名"
@@ -235,7 +235,7 @@ const SampleRequest: React.FC = () => {
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none ${
+                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 focus:outline-none ${
                       errors.phone ? 'ring-2 ring-red-500' : ''
                     }`}
                     placeholder="请输入您的手机号码"
@@ -252,7 +252,7 @@ const SampleRequest: React.FC = () => {
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none ${
+                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 focus:outline-none ${
                       errors.email ? 'ring-2 ring-red-500' : ''
                     }`}
                     placeholder="请输入您的邮箱地址"
@@ -269,7 +269,7 @@ const SampleRequest: React.FC = () => {
                     type="text"
                     value={formData.companyname}
     onChange={(e) => handleInputChange('companyname', e.target.value)}
-                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none ${
+                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 focus:outline-none ${
                       errors.companyname ? 'ring-2 ring-red-500' : ''
                     }`}
                     placeholder="请输入您的公司名称"
@@ -293,7 +293,7 @@ const SampleRequest: React.FC = () => {
                   <select
                     value={formData.sampleName}
                     onChange={(e) => handleInputChange('sampleName', e.target.value)}
-                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none ${
+                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 focus:outline-none ${
                       errors.sampleName ? 'ring-2 ring-red-500' : ''
                     }`}
                   >
@@ -317,7 +317,7 @@ const SampleRequest: React.FC = () => {
                     min={getMinDate()}
                     value={formData.requiredDate}
                     onChange={(e) => handleInputChange('requiredDate', e.target.value)}
-                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none ${
+                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 focus:outline-none ${
                       errors.requiredDate ? 'ring-2 ring-red-500' : ''
                     }`}
                   />
@@ -332,7 +332,7 @@ const SampleRequest: React.FC = () => {
                   <select
                     value={formData.urgency}
                     onChange={(e) => handleInputChange('urgency', e.target.value as 'normal' | 'urgent' | 'very_urgent')}
-                    className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                    className="w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 focus:outline-none"
                   >
                     {urgencyOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -382,7 +382,7 @@ const SampleRequest: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex items-center px-8 py-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="flex items-center px-8 py-4 bg-accent-600 text-white font-medium rounded-lg hover:bg-accent-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   {isSubmitting ? (
                     <>
@@ -453,10 +453,10 @@ const SampleRequest: React.FC = () => {
                 className="text-center"
               >
                 <div className="relative mb-6">
-                  <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 bg-accent-500 rounded-full flex items-center justify-center mx-auto mb-4">
                     <item.icon className="w-8 h-8 text-white" />
                   </div>
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-blue-700 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-accent-700 text-white rounded-full flex items-center justify-center text-sm font-bold">
                     {item.step}
                   </div>
                 </div>
@@ -469,7 +469,7 @@ const SampleRequest: React.FC = () => {
       </section>
 
       {/* Contact Info */}
-      <section className="py-16 bg-gray-100">
+      {/* <section className="py-16 bg-gray-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -482,21 +482,21 @@ const SampleRequest: React.FC = () => {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="flex items-center justify-center">
-                <Phone className="w-5 h-5 text-blue-500 mr-2" />
-                <span className="text-gray-700">400-123-4567</span>
+                <Phone className="w-5 h-5 text-accent-500 mr-2" />
+                <span className="text-gray-700">400-123-457</span>
               </div>
               <div className="flex items-center justify-center">
-                <Mail className="w-5 h-5 text-blue-500 mr-2" />
+                <Mail className="w-5 h-5 text-accent-500 mr-2" />
                 <span className="text-gray-700">sample@yxtech.com</span>
               </div>
               <div className="flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-blue-500 mr-2" />
+                <Calendar className="w-5 h-5 text-accent-500 mr-2" />
                 <span className="text-gray-700">工作日 9:00-18:00</span>
               </div>
             </div>
           </motion.div>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 };

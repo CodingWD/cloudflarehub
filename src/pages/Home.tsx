@@ -39,7 +39,7 @@ const Home: React.FC = () => {
       title: '边缘计算新突破',
       subtitle: '高性能嵌入式工控平台',
       description: '超低功耗设计，宽温工作范围，适应各种恶劣工业环境',
-      image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=1200&h=600&fit=crop',
+      image: '/images/edge-computing-breakthrough.svg',
       cta: '技术详情',
       ctaLink: '/applications'
     },
@@ -103,7 +103,7 @@ const Home: React.FC = () => {
     {
       title: '边缘计算平台',
       description: '实时数据处理，降低云端计算成本',
-      image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop',
+      image: '/images/edge-computing-platform.svg',
       tags: ['边缘计算', '数据处理']
     }
   ];
@@ -123,7 +123,7 @@ const Home: React.FC = () => {
           <motion.div
             key={index}
             className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentSlide ? 'opacity-100' : 'opacity-0'
+              index === currentSlide ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
             }`}
             style={{
               backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${slide.image})`,

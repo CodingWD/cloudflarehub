@@ -92,7 +92,7 @@ const About: React.FC = () => {
     { 
       icon: Phone, 
       label: '电话', 
-      value: companyInfo?.phone || '0755-12345678',
+      value: companyInfo?.phone || '13597561996',
       secondValue: companyInfo?.beiyongPhone
     },
     { 
@@ -103,7 +103,7 @@ const About: React.FC = () => {
     { 
       icon: MapPin, 
       label: '地址', 
-      value: companyInfo?.address || '深圳市南山区科技园南区高新南七道数字技术大厦A座12楼' 
+      value: companyInfo?.address || '深圳市宝安区同富裕工业园商务大厦A座' 
     },
     { 
       icon: Clock, 

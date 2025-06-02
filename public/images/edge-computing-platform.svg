@@ -1,0 +1,176 @@
+<svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1e293b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#334155;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="serverGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#475569;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#64748b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="dataGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0891b2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="cloudGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="400" height="300" fill="url(#bgGradient)"/>
+  
+  <!-- Grid pattern -->
+  <defs>
+    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#475569" stroke-width="0.5" opacity="0.3"/>
+    </pattern>
+  </defs>
+  <rect width="400" height="300" fill="url(#grid)"/>
+  
+  <!-- Cloud servers (top) -->
+  <g transform="translate(150, 30)">
+    <!-- Cloud shape -->
+    <path d="M 20 20 Q 10 10 20 10 Q 30 5 40 10 Q 50 5 60 10 Q 70 10 60 20 Q 70 30 60 30 L 20 30 Q 10 30 20 20 Z" fill="url(#cloudGradient)" opacity="0.8"/>
+    <text x="40" y="25" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="8" font-weight="bold">云端</text>
+    
+    <!-- Server racks in cloud -->
+    <g transform="translate(25, 35)">
+      <rect x="0" y="0" width="30" height="4" rx="1" fill="#f59e0b" opacity="0.6"/>
+      <rect x="0" y="6" width="30" height="4" rx="1" fill="#f59e0b" opacity="0.6"/>
+      <rect x="0" y="12" width="30" height="4" rx="1" fill="#f59e0b" opacity="0.6"/>
+    </g>
+  </g>
+  
+  <!-- Edge computing nodes -->
+  <g transform="translate(50, 120)">
+    <!-- Edge node 1 -->
+    <rect x="0" y="0" width="40" height="30" rx="3" fill="url(#serverGradient)" stroke="#06b6d4" stroke-width="2"/>
+    <rect x="5" y="5" width="30" height="3" rx="1" fill="#06b6d4" opacity="0.8"/>
+    <rect x="5" y="10" width="30" height="3" rx="1" fill="#06b6d4" opacity="0.6"/>
+    <rect x="5" y="15" width="30" height="3" rx="1" fill="#06b6d4" opacity="0.4"/>
+    <circle cx="35" cy="25" r="3" fill="#10b981"/>
+    <text x="20" y="40" text-anchor="middle" fill="#06b6d4" font-family="Arial, sans-serif" font-size="8">边缘节点1</text>
+  </g>
+  
+  <g transform="translate(150, 140)">
+    <!-- Edge node 2 -->
+    <rect x="0" y="0" width="40" height="30" rx="3" fill="url(#serverGradient)" stroke="#06b6d4" stroke-width="2"/>
+    <rect x="5" y="5" width="30" height="3" rx="1" fill="#06b6d4" opacity="0.8"/>
+    <rect x="5" y="10" width="30" height="3" rx="1" fill="#06b6d4" opacity="0.6"/>
+    <rect x="5" y="15" width="30" height="3" rx="1" fill="#06b6d4" opacity="0.4"/>
+    <circle cx="35" cy="25" r="3" fill="#10b981"/>
+    <text x="20" y="40" text-anchor="middle" fill="#06b6d4" font-family="Arial, sans-serif" font-size="8">边缘节点2</text>
+  </g>
+  
+  <g transform="translate(250, 120)">
+    <!-- Edge node 3 -->
+    <rect x="0" y="0" width="40" height="30" rx="3" fill="url(#serverGradient)" stroke="#06b6d4" stroke-width="2"/>
+    <rect x="5" y="5" width="30" height="3" rx="1" fill="#06b6d4" opacity="0.8"/>
+    <rect x="5" y="10" width="30" height="3" rx="1" fill="#06b6d4" opacity="0.6"/>
+    <rect x="5" y="15" width="30" height="3" rx="1" fill="#06b6d4" opacity="0.4"/>
+    <circle cx="35" cy="25" r="3" fill="#10b981"/>
+    <text x="20" y="40" text-anchor="middle" fill="#06b6d4" font-family="Arial, sans-serif" font-size="8">边缘节点3</text>
+  </g>
+  
+  <!-- Data processing center -->
+  <g transform="translate(320, 130)">
+    <rect x="0" y="0" width="50" height="40" rx="5" fill="url(#dataGradient)" stroke="#0891b2" stroke-width="2"/>
+    <text x="25" y="15" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="8" font-weight="bold">数据处理</text>
+    <text x="25" y="25" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="8" font-weight="bold">中心</text>
+    
+    <!-- Processing indicators -->
+    <rect x="5" y="30" width="8" height="6" rx="1" fill="#22d3ee">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="16" y="30" width="8" height="6" rx="1" fill="#22d3ee">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" begin="0.2s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="27" y="30" width="8" height="6" rx="1" fill="#22d3ee">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" begin="0.4s" repeatCount="indefinite"/>
+    </rect>
+    <rect x="38" y="30" width="8" height="6" rx="1" fill="#22d3ee">
+      <animate attributeName="opacity" values="0.3;1;0.3" dur="1s" begin="0.6s" repeatCount="indefinite"/>
+    </rect>
+  </g>
+  
+  <!-- IoT devices -->
+  <g fill="#8b5cf6" opacity="0.8">
+    <circle cx="30" cy="220" r="6"/>
+    <text x="30" y="235" text-anchor="middle" fill="#8b5cf6" font-family="Arial, sans-serif" font-size="7">传感器</text>
+    
+    <circle cx="100" cy="240" r="6"/>
+    <text x="100" y="255" text-anchor="middle" fill="#8b5cf6" font-family="Arial, sans-serif" font-size="7">设备</text>
+    
+    <circle cx="170" cy="230" r="6"/>
+    <text x="170" y="245" text-anchor="middle" fill="#8b5cf6" font-family="Arial, sans-serif" font-size="7">控制器</text>
+    
+    <circle cx="240" cy="250" r="6"/>
+    <text x="240" y="265" text-anchor="middle" fill="#8b5cf6" font-family="Arial, sans-serif" font-size="7">监控</text>
+  </g>
+  
+  <!-- Data flow lines -->
+  <g stroke="#10b981" stroke-width="2" fill="none" opacity="0.8">
+    <!-- From IoT to edge nodes -->
+    <path d="M 36 220 Q 50 200 70 140" stroke-dasharray="5,3">
+      <animate attributeName="stroke-dashoffset" values="0;-8" dur="1.5s" repeatCount="indefinite"/>
+    </path>
+    <path d="M 106 240 Q 130 200 170 170" stroke-dasharray="5,3">
+      <animate attributeName="stroke-dashoffset" values="0;-8" dur="1.5s" begin="0.3s" repeatCount="indefinite"/>
+    </path>
+    <path d="M 176 230 Q 200 200 270 140" stroke-dasharray="5,3">
+      <animate attributeName="stroke-dashoffset" values="0;-8" dur="1.5s" begin="0.6s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- From edge nodes to processing center -->
+    <path d="M 90 135 Q 200 120 320 150" stroke-dasharray="5,3">
+      <animate attributeName="stroke-dashoffset" values="0;-8" dur="2s" repeatCount="indefinite"/>
+    </path>
+    <path d="M 190 155 Q 250 145 320 150" stroke-dasharray="5,3">
+      <animate attributeName="stroke-dashoffset" values="0;-8" dur="2s" begin="0.4s" repeatCount="indefinite"/>
+    </path>
+    <path d="M 290 135 L 320 150" stroke-dasharray="5,3">
+      <animate attributeName="stroke-dashoffset" values="0;-8" dur="2s" begin="0.8s" repeatCount="indefinite"/>
+    </path>
+    
+    <!-- Reduced cloud communication -->
+    <path d="M 345 130 Q 300 80 220 60" stroke="#f59e0b" stroke-width="1" stroke-dasharray="3,5" opacity="0.5">
+      <animate attributeName="stroke-dashoffset" values="0;-8" dur="3s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  
+  <!-- Cost reduction indicator -->
+  <g transform="translate(20, 50)">
+    <rect x="0" y="0" width="80" height="40" rx="5" fill="rgba(16, 185, 129, 0.2)" stroke="#10b981" stroke-width="1"/>
+    <text x="40" y="15" text-anchor="middle" fill="#10b981" font-family="Arial, sans-serif" font-size="10" font-weight="bold">成本降低</text>
+    <text x="40" y="28" text-anchor="middle" fill="#10b981" font-family="Arial, sans-serif" font-size="8">↓ 60%</text>
+  </g>
+  
+  <!-- Real-time processing indicator -->
+  <g transform="translate(300, 50)">
+    <rect x="0" y="0" width="80" height="40" rx="5" fill="rgba(6, 182, 212, 0.2)" stroke="#06b6d4" stroke-width="1"/>
+    <text x="40" y="15" text-anchor="middle" fill="#06b6d4" font-family="Arial, sans-serif" font-size="10" font-weight="bold">实时处理</text>
+    <text x="40" y="28" text-anchor="middle" fill="#06b6d4" font-family="Arial, sans-serif" font-size="8">< 10ms</text>
+  </g>
+  
+  <!-- Data packets animation -->
+  <g fill="#22d3ee" opacity="0.7">
+    <circle cx="50" cy="180" r="2">
+      <animateMotion dur="2s" repeatCount="indefinite">
+        <path d="M 0 0 Q 100 -50 200 -30 Q 300 -10 270 -20"/>
+      </animateMotion>
+    </circle>
+    <circle cx="120" cy="200" r="2">
+      <animateMotion dur="2.5s" repeatCount="indefinite">
+        <path d="M 0 0 Q 80 -60 150 -45 Q 200 -30 170 -40"/>
+      </animateMotion>
+    </circle>
+    <circle cx="200" cy="190" r="2">
+      <animateMotion dur="1.8s" repeatCount="indefinite">
+        <path d="M 0 0 Q 60 -40 120 -35 Q 150 -25 120 -30"/>
+      </animateMotion>
+    </circle>
+  </g>
+</svg>

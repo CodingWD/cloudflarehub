@@ -26,8 +26,8 @@ const Header: React.FC = () => {
   // 基本导航菜单
   const [navigation, setNavigation] = useState<NavigationItem[]>([
     { name: '首页', href: '/' },
-    { 
-      name: '产品中心', 
+    {
+      name: '产品中心',
       href: '/products',
       submenu: [] // 初始化为空数组，稍后在useEffect中获取categories后再更新
     },
@@ -44,7 +44,7 @@ const Header: React.FC = () => {
       try {
         const categories = await ApiService.getProductCategories();
         console.log('导航栏获取产品分类:', categories);
-        
+
         // 更新产品中心的子菜单
         setNavigation(prev => {
           return prev.map(item => {
@@ -102,16 +102,15 @@ const Header: React.FC = () => {
                   >
                     <Link
                       to={item.href}
-                      className={`text-sm font-medium transition-colors duration-200 ${
-                        isActive(item.href)
-                          ? 'text-accent-600'
-                          : 'text-dark-600 hover:text-accent-600'
-                      }`}
+                      className={`text-sm font-medium transition-colors duration-200 ${isActive(item.href)
+                        ? 'text-accent-600'
+                        : 'text-dark-600 hover:text-accent-600'
+                        }`}
                     >
                       {item.name}
                     </Link>
                     <ChevronDown className="w-4 h-4 text-dark-400" />
-                    
+
                     {/* Submenu */}
                     <AnimatePresence>
                       {openSubmenu === item.name && (
@@ -138,11 +137,10 @@ const Header: React.FC = () => {
                 ) : (
                   <Link
                     to={item.href}
-                    className={`text-sm font-medium transition-colors duration-200 ${
-                      isActive(item.href)
-                        ? 'text-accent-600'
-                        : 'text-dark-600 hover:text-accent-600'
-                    }`}
+                    className={`text-sm font-medium transition-colors duration-200 ${isActive(item.href)
+                      ? 'text-accent-600'
+                      : 'text-dark-600 hover:text-accent-600'
+                      }`}
                   >
                     {item.name}
                   </Link>
@@ -153,7 +151,7 @@ const Header: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link 
+            <Link
               to="/sample-request"
               className="px-4 py-2 text-accent-600 border border-accent-600 rounded-lg hover:bg-accent-50 transition-colors duration-200"
             >
@@ -190,11 +188,10 @@ const Header: React.FC = () => {
                   <Link
                     to={item.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
-                      isActive(item.href)
-                        ? 'text-accent-600 bg-accent-50'
-                        : 'text-dark-600 hover:text-accent-600 hover:bg-gray-50'
-                    }`}
+                    className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActive(item.href)
+                      ? 'text-accent-600 bg-accent-50'
+                      : 'text-dark-600 hover:text-accent-600 hover:bg-gray-50'
+                      }`}
                   >
                     {item.name}
                   </Link>
@@ -214,19 +211,23 @@ const Header: React.FC = () => {
                   )}
                 </div>
               ))}
-              
+
               {/* Mobile Action Buttons */}
-              <div className="pt-4 border-t border-gray-200 space-y-2">
+              {/* Action Buttons */}
+              <div className="hidden md:flex items-center space-x-4">
                 <Link
                   to="/sample-request"
-                  className="block w-full px-4 py-2 text-center text-accent-600 border border-accent-600 rounded-lg hover:bg-accent-50 transition-colors duration-200"
-                  onClick={() => setIsMenuOpen(false)}
+                  className="px-4 py-2 text-accent-600 border border-accent-600 rounded-lg hover:bg-accent-50 transition-colors duration-200"
                 >
                   申请样品
                 </Link>
-                <button className="w-full px-4 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-700 transition-colors duration-200">
+                <Link
+                  to="/about"
+                  className="block w-full px-4 py-2 text-center bg-accent-600 text-white rounded-lg hover:bg-accent-700 transition-colors duration-200"
+                  onClick={() => setIsMenuOpen(false)}
+                >
                   联系我们
-                </button>
+                </Link>
               </div>
             </div>
           </motion.div>
