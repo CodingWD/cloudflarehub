@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  ChevronLeft, 
-  Download, 
-  Cpu, 
-  HardDrive, 
-  Zap, 
-  Thermometer, 
-  Wifi, 
+import {
+  ChevronLeft,
+  Download,
+  Cpu,
+  HardDrive,
+  Zap,
+  Thermometer,
+  Wifi,
   Monitor,
   Package,
   FileText,
@@ -17,6 +17,11 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { ApiService, ProductInfo } from '../services/api';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+
+// 添加BASE_URL常量
+const BASE_URL = 'http://192.168.31.177:1337';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,11 +29,14 @@ const ProductDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('images');
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isNavSticky, setIsNavSticky] = useState(false);
+  const [navOriginalTop, setNavOriginalTop] = useState(0);
+  const navRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
       if (!id) return;
-      
+
       try {
         const data = await ApiService.getProductInfo(id);
         setProduct(data);
@@ -41,6 +49,80 @@ const ProductDetail: React.FC = () => {
 
     fetchProduct();
   }, [id]);
+
+  // 添加状态保存导航栏高度
+  const [navHeight, setNavHeight] = useState(0);
+
+  // 添加滚动监听
+  useEffect(() => {
+    // 延迟计算，确保DOM完全加载
+    let ticking = false;
+
+    // 获取导航栏原始位置
+    const calculateNavPosition = () => {
+      if (navRef.current) {
+        const rect = navRef.current.getBoundingClientRect();
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const newNavOriginalTop = rect.top + scrollTop;
+        const newNavHeight = rect.height;
+        
+        // 只有在导航栏不是固定状态时才更新原始位置
+        if (!isNavSticky) {
+          setNavOriginalTop(newNavOriginalTop);
+          setNavHeight(newNavHeight);
+          console.log('导航栏原始位置计算完成:', newNavOriginalTop, '高度:', newNavHeight);
+        }
+      } else {
+        console.log('导航栏元素未找到，重试中...');
+        // 如果元素未找到，延迟重试
+        setTimeout(calculateNavPosition, 200);
+      }
+    };
+
+    // 等待DOM完全加载后再计算位置，增加延迟时间
+    setTimeout(calculateNavPosition, 1000);
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          if (navRef.current && navOriginalTop > 0) {
+            const currentScrollY = window.scrollY;
+            const mainNavHeight = 64; // 主导航栏高度
+            const stickPoint = navOriginalTop - mainNavHeight; // 固定触发点
+            
+            let shouldSticky;
+            
+            if (currentScrollY >= stickPoint) {
+              // 向下滑动超过触发点：固定导航栏
+              shouldSticky = true;
+            } else {
+              // 向上滑动回到触发点以下：恢复跟随页面滚动
+              shouldSticky = false;
+            }
+            
+            if (isNavSticky !== shouldSticky) {
+              setIsNavSticky(shouldSticky);
+              console.log('🔄 导航栏状态更新:', shouldSticky ? '固定在顶部' : '跟随页面滚动', 
+                '滚动位置:', currentScrollY, '触发点:', stickPoint, '原始位置:', navOriginalTop);
+            }
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    // 初始执行一次滚动处理
+    handleScroll();
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', calculateNavPosition);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', calculateNavPosition);
+    };
+  }, [isNavSticky, navOriginalTop]); // 添加必要的依赖项
 
   if (loading) {
     return (
@@ -73,10 +155,10 @@ const ProductDetail: React.FC = () => {
   }
 
   const getProductImages = () => {
-    // Temporarily use placeholder images since images property doesn't exist
-    // if (product.images && product.images.length > 0) {
-    //   return product.images.map(img => `http://192.168.31.130:1337${img.url}`);
-    // }
+    // 如果产品有图片，使用产品图片
+    if (product.image && product.image.length > 0) {
+      return product.image.map(img => `${BASE_URL}${img.url}`);
+    }
     // 默认图片
     return [
       'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=600&h=400&fit=crop',
@@ -88,24 +170,21 @@ const ProductDetail: React.FC = () => {
   const productImages = getProductImages();
 
   const specifications = [
-    // Temporarily disabled - these properties don't exist in ProductInfo interface
-    // { label: 'CPU', value: product.cpu, icon: Cpu },
-    // { label: '内存', value: product.memory, icon: HardDrive },
-    // { label: '存储', value: product.storage, icon: HardDrive },
-    // { label: '功耗', value: product.power_consumption, icon: Zap },
-    // { label: '工作温度', value: product.operating_temperature, icon: Thermometer },
-    // { label: '网络接口', value: product.network_interfaces, icon: Wifi },
-    // { label: '显示接口', value: product.display_interfaces, icon: Monitor },
-    // { label: '尺寸', value: product.dimensions, icon: Package }
-    
-    // Add some default specs based on available data
-    { label: '产品名称', value: product.product_name, icon: Cpu },
-    { label: '产品ID', value: product.id.toString(), icon: HardDrive },
-    { label: '发布状态', value: product.faBuStatus, icon: Zap },
+    // 使用新添加的属性
+    // { label: '产品名称', value: product.product_name, icon: Cpu },
+    // { label: '产品ID', value: product.id.toString(), icon: HardDrive },
+    // { label: '发布状态', value: product.faBuStatus, icon: Zap },
+    { label: 'CPU', value: product.cpuLeiXing, icon: Cpu },
+    { label: '内存', value: product.neiCun, icon: HardDrive },
+    { label: '网卡', value: product.wangKa, icon: Wifi },
+    { label: '显示', value: product.xianShiJieKou, icon: Monitor },
+    { label: '电源', value: product.powerType, icon: Zap },
+    { label: '操作系统', value: product.operating_system, icon: Package },
+    { label: '工作温度', value: product.operating_temperature, icon: Thermometer },
   ].filter(spec => spec.value);
 
   const tabs = [
-    { id: 'images', label: '宣传图', icon: ImageIcon },
+    { id: 'images', label: '产品详情', icon: ImageIcon },
     { id: 'specs', label: '规格书', icon: FileText },
     { id: 'applications', label: '应用场景', icon: Settings },
     { id: 'downloads', label: '附件下载', icon: Download }
@@ -189,7 +268,7 @@ const ProductDetail: React.FC = () => {
                   className="w-full h-96 object-cover rounded-xl shadow-lg"
                 />
               </div>
-              
+
               {/* Thumbnail Images */}
               {productImages.length > 1 && (
                 <div className="flex space-x-2 overflow-x-auto">
@@ -197,9 +276,8 @@ const ProductDetail: React.FC = () => {
                     <button
                       key={index}
                       onClick={() => setSelectedImageIndex(index)}
-                      className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors duration-200 ${
-                        index === selectedImageIndex ? 'border-accent-600' : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                      className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors duration-200 ${index === selectedImageIndex ? 'border-accent-600' : 'border-gray-200 hover:border-gray-300'
+                        }`}
                     >
                       <img
                         src={image}
@@ -221,22 +299,24 @@ const ProductDetail: React.FC = () => {
                 </span>
               )}
               */}
-              
+
               <h1 className="text-3xl md:text-4xl font-bold text-dark-800 mb-4">{product.product_name}</h1>
-              
+
               <p className="text-lg text-gray-600 mb-8 leading-relaxed">
                 {product.short_description || '专业工控设备，为您的工业应用提供可靠的计算平台。采用先进的处理器技术，具备出色的性能和稳定性。'}
               </p>
 
               {/* Key Specifications */}
-              <div className="bg-gray-50 rounded-xl p-6 mb-8">
+              <div className="bg-gray-50 rounded-xl p-3  mb-8">
                 <h3 className="text-lg font-semibold text-dark-800 mb-4">核心参数</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {specifications.slice(0, 6).map((spec, index) => {
-                    const IconComponent = spec.icon;
+                    const IconComponent = spec.icon || Cpu; // 提供默认图标
                     return (
                       <div key={index} className="flex items-center">
-                        <IconComponent className="w-5 h-5 text-accent-600 mr-3" />
+                        <div className="w-5  h-5 flex-shrink-0 mr-3">
+                          <IconComponent className="w-full h-full text-accent-600" />
+                        </div>
                         <span className="font-medium text-gray-700 mr-2">{spec.label}:</span>
                         <span className="text-gray-600">{spec.value}</span>
                       </div>
@@ -263,52 +343,118 @@ const ProductDetail: React.FC = () => {
       </section>
 
       {/* Tabs Navigation */}
-      <section className="bg-white border-t">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8 overflow-x-auto">
-            {tabs.map((tab) => {
-              const IconComponent = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center py-4 px-2 border-b-2 font-medium text-sm transition-colors duration-200 whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? 'border-accent-600 text-accent-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  <IconComponent className="w-5 h-5 mr-2" />
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+      <div className="relative">
+        {/* 导航栏容器 */}
+        <div className="relative">
+          <section
+            ref={navRef}
+            className={`bg-white ${isNavSticky
+              ? 'fixed top-[64px] left-0 right-0 z-40 shadow-[0_2px_10px_rgba(0,0,0,0.05)] animate-slideDown'
+              : 'border-t'}`}
+          >
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+              <div className="flex space-x-8 overflow-x-auto py-2 scrollbar-hide">
+                {/* 添加左右渐变阴影指示器 */}
+                <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent pointer-events-none"></div>
 
+                {tabs.map((tab) => {
+                  const IconComponent = tab.icon || ImageIcon;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => {
+                        setActiveTab(tab.id);
+                        // 点击后滚动到内容区域，确保内容不被遮挡
+                        const contentSection = document.querySelector('#tab-content');
+                        if (contentSection) {
+                          const offsetTop = contentSection.getBoundingClientRect().top + window.scrollY;
+                          const mainNavHeight = 64;
+                          const tabNavHeight = navHeight || 60;
+                          const scrollTo = offsetTop - mainNavHeight - tabNavHeight - 20; // 额外20px间距
+                          window.scrollTo({
+                            top: scrollTo,
+                            behavior: 'smooth'
+                          });
+                        }
+                      }}
+                      className={`flex items-center py-3 px-4 font-medium text-sm transition-all duration-200 whitespace-nowrap hover:bg-gray-50 rounded-md ${
+                        activeTab === tab.id
+                          ? 'text-accent-600 border-b-2 border-accent-600'
+                          : 'text-gray-600 hover:text-gray-900'
+                        }`}
+                    >
+                      <IconComponent className="w-4 h-4 mr-2" />
+                      {tab.label}
+                    </button>
+                  );
+                })}
+
+                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none"></div>
+              </div>
+            </div>
+          </section>
+
+          {/* 添加占位空间，防止内容跳动，确保内容不被覆盖 */}
+          {isNavSticky && <div style={{ height: `${navHeight}px`, marginBottom: '20px' }} />}
+        </div>
+      </div>
       {/* Tab Content */}
-      <section className="py-12">
+      <section id="tab-content" className={`${isNavSticky ? 'pt-8 pb-6' : 'py-6'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {activeTab === 'images' && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              className="space-y-6"
             >
-              {productImages.map((image, index) => (
-                <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden">
-                  <img
-                    src={image}
-                    alt={`${product.product_name} 宣传图 ${index + 1}`}
-                    className="w-full h-64 object-cover"
-                  />
-                  <div className="p-4">
-                    <h4 className="font-medium text-dark-800">产品图片 {index + 1}</h4>
-                    <p className="text-sm text-gray-600 mt-1">高清产品展示图</p>
-                  </div>
+              {product.full_description ? (
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden p-6">
+                  <ReactMarkdown
+                    rehypePlugins={[rehypeRaw]}
+                    components={{
+                      img: ({ node, ...props }: any) => (
+                        <img
+                          {...props}
+                          className="max-w-full h-auto rounded-lg mx-auto my-6"
+                          src={props.src?.replace(/^\//, `${BASE_URL}/`) || ''}
+                          alt={props.alt || '产品图片'}
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=400&fit=crop';
+                          }}
+                        />
+                      ),
+                      a: ({ node, ...props }: any) => (
+                        <a
+                          {...props}
+                          className="text-accent-600 hover:text-accent-700 underline"
+                          target="_blank"
+                          aria-label={`在新窗口打开链接: ${props.children}`}
+                          rel="noopener noreferrer"
+                        />
+                      ),
+                    }}
+                  >
+                    {product.full_description}
+                  </ReactMarkdown>
                 </div>
-              ))}
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {productImages.map((image, index) => (
+                    <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden">
+                      <img
+                        src={image}
+                        alt={`${product.product_name} 宣传图 ${index + 1}`}
+                        className="w-full h-64 object-cover"
+                      />
+                      <div className="p-4">
+                        <h4 className="font-medium text-dark-800">产品图片 {index + 1}</h4>
+                        <p className="text-sm text-gray-600 mt-1">高清产品展示图</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -324,12 +470,14 @@ const ProductDetail: React.FC = () => {
                   <table className="w-full">
                     <tbody className="divide-y divide-gray-200">
                       {specifications.map((spec, index) => {
-                        const IconComponent = spec.icon;
+                        const IconComponent = spec.icon || Cpu; // 提供默认图标
                         return (
                           <tr key={index} className="hover:bg-gray-50">
                             <td className="py-4 pr-6">
                               <div className="flex items-center">
-                                <IconComponent className="w-5 h-5 text-accent-600 mr-3" />
+                                <div className="w-5 h-5 flex-shrink-0 mr-3">
+                                  <IconComponent className="w-full h-full text-accent-600" />
+                                </div>
                                 <span className="font-medium text-gray-900">{spec.label}</span>
                               </div>
                             </td>
@@ -354,7 +502,7 @@ const ProductDetail: React.FC = () => {
                 <h3 className="text-2xl font-bold text-dark-800 mb-4">应用场景</h3>
                 <p className="text-lg text-gray-600">广泛应用于各种工业自动化和智能制造场景</p>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {applications.map((app, index) => (
                   <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden">

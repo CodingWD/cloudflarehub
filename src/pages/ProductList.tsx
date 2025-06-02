@@ -1,17 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Search, Filter, Grid3X3, List, ChevronRight, Cpu, HardDrive, Zap, Thermometer } from 'lucide-react';
 import { ApiService, ProductInfo, ProductCategory } from '../services/api';
 
 const ProductList: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const params = useParams();
   const [products, setProducts] = useState<ProductInfo[]>([]);
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '');
+  // 从URL参数中获取分类ID
+  const [selectedCategory, setSelectedCategory] = useState(
+    params.categoryId || searchParams.get('category') || ''
+  );
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  // 监听路由参数变化，更新selectedCategory
+  useEffect(() => {
+    console.log('路由参数变化:', params.categoryId);
+    setSelectedCategory(params.categoryId || searchParams.get('category') || '');
+  }, [params.categoryId, searchParams]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,6 +30,8 @@ const ProductList: React.FC = () => {
           ApiService.getProductInfos(),
           ApiService.getProductCategories()
         ]);
+        console.log('产品数据:', productsData);
+        console.log('分类数据:', categoriesData);
         setProducts(productsData);
         setCategories(categoriesData);
       } catch (error) {
@@ -32,36 +44,44 @@ const ProductList: React.FC = () => {
     fetchData();
   }, []);
 
+  // 在filteredProducts定义后添加：
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (product.short_description && product.short_description.toLowerCase().includes(searchTerm.toLowerCase()));
-    // Category filtering temporarily disabled
-    const matchesCategory = selectedCategory === 'all'; // || product.product_category?.documentId === selectedCategory;
+      (product.short_description && product.short_description.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesCategory = selectedCategory === '' ||
+      (product.product_category &&
+        (product.product_category.id.toString() === selectedCategory || 
+          product.product_category.documentId === selectedCategory));
     return matchesSearch && matchesCategory;
   });
 
   const getProductImage = (product: ProductInfo) => {
-    // Temporarily use placeholder image since images property doesn't exist
-    // if (product.images && product.images.length > 0) {
-    //   return `http://192.168.31.130:1337${product.images[0].url}`;
-    // }
+    // 使用处理后的图片URL
+    if (product.productImageUrl) {
+      return product.productImageUrl;
+    }
+    // 如果有图片数组，使用第一张图片
+    if (product.image && product.image.length > 0) {
+      return `http://192.168.31.177:1337${product.image[0].url}`;
+    }
+    // 使用占位图片作为后备
     return 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop';
   };
 
   const getProductSpecs = (product: ProductInfo) => {
+    console.log('处理产品规格:', product);
     const specs = [];
-    // Temporarily disabled - these properties don't exist in ProductInfo interface
-    // if (product.processor) specs.push({ icon: Cpu, label: '处理器', value: product.processor });
-    // if (product.memory) specs.push({ icon: HardDrive, label: '内存', value: product.memory });
-    // if (product.power_consumption) specs.push({ icon: Zap, label: '功耗', value: product.power_consumption });
-    // if (product.operating_temperature) specs.push({ icon: Thermometer, label: '工作温度', value: product.operating_temperature });
-    
-    // Add some default specs based on available data
+
+    // 添加一些基于可用数据的默认规格
     specs.push({ icon: Cpu, label: '产品', value: product.product_name });
     if (product.short_description) {
       specs.push({ icon: HardDrive, label: '描述', value: product.short_description.substring(0, 20) + '...' });
     }
-    
+    if (product.product_category) {
+      specs.push({ icon: Zap, label: '分类', value: product.product_category.name });
+    }
+
+    console.log('生成的规格:', specs);
     return specs.slice(0, 3); // 只显示前3个规格
   };
 
@@ -173,8 +193,8 @@ const ProductList: React.FC = () => {
               <p className="text-gray-500">请尝试调整搜索条件或选择其他分类</p>
             </motion.div>
           ) : (
-            <div className={viewMode === 'grid' ? 
-              'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8' : 
+            <div className={viewMode === 'grid' ?
+              'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8' :
               'space-y-6'
             }>
               {filteredProducts.map((product, index) => (
@@ -189,7 +209,7 @@ const ProductList: React.FC = () => {
                   {viewMode === 'grid' ? (
                     // Grid View
                     <Link
-                      to={`/products/${product.documentId}`}
+                      to={`/products/${product.slug}`}
                       className="block bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
                     >
                       <div className="relative overflow-hidden">
@@ -199,16 +219,15 @@ const ProductList: React.FC = () => {
                           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        {/* Category badge - temporarily disabled */}
-                        {/* {product.product_category && (
+                        {product.product_category && (
                           <div className="absolute top-4 left-4">
                             <span className="px-3 py-1 bg-accent-600 text-white text-xs font-medium rounded-full">
                               {product.product_category.name}
                             </span>
                           </div>
-                        )} */}
+                        )}
                       </div>
-                      
+
                       <div className="p-6">
                         <h3 className="text-xl font-semibold text-dark-800 mb-2 group-hover:text-accent-600 transition-colors duration-200">
                           {product.product_name}
@@ -216,7 +235,7 @@ const ProductList: React.FC = () => {
                         <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                           {product.short_description || '专业工控设备，为您的工业应用提供可靠的计算平台'}
                         </p>
-                        
+
                         {/* Key Specs */}
                         <div className="space-y-2 mb-4">
                           {getProductSpecs(product).map((spec, specIndex) => {
@@ -230,7 +249,7 @@ const ProductList: React.FC = () => {
                             );
                           })}
                         </div>
-                        
+
                         <div className="flex items-center text-accent-600 font-medium group-hover:text-accent-700">
                           <span>查看详情</span>
                           <ChevronRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
@@ -240,7 +259,7 @@ const ProductList: React.FC = () => {
                   ) : (
                     // List View
                     <Link
-                      to={`/products/${product.documentId}`}
+                      to={`/products/${product.slug}`}
                       className="flex bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
                     >
                       <img
@@ -248,23 +267,23 @@ const ProductList: React.FC = () => {
                         alt={product.product_name}
                         className="w-48 h-32 object-cover flex-shrink-0"
                       />
-                      
+
                       <div className="flex-1 p-6">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             {/* Category badge - temporarily disabled */}
-                             {/* {product.product_category && (
+                            {product.product_category && (
                                <span className="inline-block px-3 py-1 bg-accent-100 text-accent-700 text-xs font-medium rounded-full mb-2">
                                  {product.product_category.name}
                                </span>
-                             )} */}
+                             )}
                             <h3 className="text-xl font-semibold text-dark-800 mb-2 group-hover:text-accent-600 transition-colors duration-200">
                               {product.product_name}
                             </h3>
                             <p className="text-gray-600 text-sm mb-3 line-clamp-2">
                               {product.short_description || '专业工控设备，为您的工业应用提供可靠的计算平台'}
                             </p>
-                            
+
                             {/* Key Specs in List View */}
                             <div className="flex flex-wrap gap-4">
                               {getProductSpecs(product).map((spec, specIndex) => {
@@ -279,7 +298,7 @@ const ProductList: React.FC = () => {
                               })}
                             </div>
                           </div>
-                          
+
                           <div className="flex items-center text-accent-600 font-medium group-hover:text-accent-700 ml-4">
                             <span>查看详情</span>
                             <ChevronRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />

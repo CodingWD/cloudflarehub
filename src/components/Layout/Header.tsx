@@ -1,29 +1,75 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ApiService, ProductCategory } from '../../services/api';
+
+// 定义子菜单项的类型
+interface SubmenuItem {
+  name: string;
+  href: string;
+}
+
+// 定义导航项的类型
+interface NavigationItem {
+  name: string;
+  href: string;
+  submenu?: SubmenuItem[];
+}
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isProductsOpen, setIsProductsOpen] = useState(false);
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
   const location = useLocation();
+  // const [productCategories, setProductCategories] = useState<ProductCategory[]>([]);
 
-  const navigation = [
+  // 基本导航菜单
+  const [navigation, setNavigation] = useState<NavigationItem[]>([
     { name: '首页', href: '/' },
     { 
       name: '产品中心', 
       href: '/products',
-      submenu: [
-        { name: '产品分类', href: '/products/categories' },
-        { name: '产品列表', href: '/products' },
-      ]
+      submenu: [] // 初始化为空数组，稍后在useEffect中获取categories后再更新
     },
     { name: '行业应用', href: '/applications' },
     { name: '关于我们', href: '/about' },
     { name: '新闻动态', href: '/news' },
     { name: '下载专区', href: '/downloads' },
     { name: '样品申请', href: '/sample-request' },
-  ];
+  ]);
+
+  // 获取产品分类
+  useEffect(() => {
+    const fetchProductCategories = async () => {
+      try {
+        const categories = await ApiService.getProductCategories();
+        console.log('导航栏获取产品分类:', categories);
+        
+        // 更新产品中心的子菜单
+        setNavigation(prev => {
+          return prev.map(item => {
+            if (item.name === '产品中心') {
+              return {
+                ...item,
+                submenu: [
+                  // 产品中心本身就是产品列表页，不需要再添加产品列表菜单项
+                  ...categories.map((cat: ProductCategory) => ({
+                    name: cat.name,
+                    href: `/products/category/${cat.id}`
+                  }))
+                ]
+              };
+            }
+            return item;
+          });
+        });
+      } catch (error) {
+        console.error('获取产品分类失败:', error);
+      }
+    };
+
+    fetchProductCategories();
+  }, []);
 
   const isActive = (href: string) => {
     if (href === '/') {
@@ -51,8 +97,8 @@ const Header: React.FC = () => {
                 {item.submenu ? (
                   <div
                     className="flex items-center space-x-1 cursor-pointer"
-                    onMouseEnter={() => setIsProductsOpen(true)}
-                    onMouseLeave={() => setIsProductsOpen(false)}
+                    onMouseEnter={() => setOpenSubmenu(item.name)}
+                    onMouseLeave={() => setOpenSubmenu(null)}
                   >
                     <Link
                       to={item.href}
@@ -68,7 +114,7 @@ const Header: React.FC = () => {
                     
                     {/* Submenu */}
                     <AnimatePresence>
-                      {isProductsOpen && (
+                      {openSubmenu === item.name && (
                         <motion.div
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}

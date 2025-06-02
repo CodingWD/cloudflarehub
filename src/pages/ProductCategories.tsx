@@ -98,10 +98,7 @@ const ProductCategories: React.FC = () => {
                   viewport={{ once: true }}
                   className="group"
                 >
-                  <Link
-                    to={`/products?category=${category.documentId}`}
-                    className="block bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
-                  >
+                  <Link to={`/products/category/${category.documentId}`} className="block rounded-lg shadow-lg overflow-hidden">
                     {/* Category Header */}
                     <div className={`bg-gradient-to-r ${colorClass} p-6 text-white`}>
                       <div className="flex items-center justify-between">
