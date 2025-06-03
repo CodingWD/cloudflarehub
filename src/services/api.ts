@@ -79,13 +79,20 @@ export interface CarouselSlide {
   id: number;
   documentId: string;
   title: string;           // 轮播图标题
+  description?: string;    // 描述文本
   subtitle?: string;       // 副标题或描述文本
   order: number;           // 显示顺序
   media_type: 'image' | 'video' | 'svg';  // 媒体类型
-  cta_text?: string;       // 按钮文本
-  cta_type?: 'internal' | 'external' | 'anchor' | 'download';  // 链接类型
-  cta_link?: string;       // 链接地址
-  cta_style?: 'primary' | 'secondary' | 'outline';  // 按钮样式
+  cta?: {
+    text?: string;         // 按钮文本
+    type?: 'internal' | 'external' | 'anchor' | 'download';  // 链接类型
+    link?: string;         // 链接地址
+    style?: 'primary' | 'secondary' | 'outline';  // 按钮样式
+  };
+  cta_text?: string;       // 按钮文本（向后兼容）
+  cta_type?: 'internal' | 'external' | 'anchor' | 'download';  // 链接类型（向后兼容）
+  cta_link?: string;       // 链接地址（向后兼容）
+  cta_style?: 'primary' | 'secondary' | 'outline';  // 按钮样式（向后兼容）
   is_active: boolean;      // 是否启用
   locale?: string;         // 语言代码
   createdAt: string;

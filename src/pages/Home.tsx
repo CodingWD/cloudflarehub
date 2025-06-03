@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronRight, ArrowRight, Cpu, Monitor, Smartphone, Settings, TrendingUp, Users, Award, Globe } from 'lucide-react';
+import { ChevronRight, ArrowRight, Cpu, Monitor, Smartphone, Settings, TrendingUp, Users, Award, Globe, Star, CheckCircle, Play } from 'lucide-react';
 import { ApiService, ProductCategory, NewsArticle, CarouselSlide } from '../services/api';
 
 const Home: React.FC = () => {
@@ -34,52 +34,60 @@ const Home: React.FC = () => {
   }, []);
 
   // 渲染CTA按钮的函数
-  const renderCTAButton = (slide: CarouselSlide) => {
-    if (!slide.cta_text || !slide.cta_link) return null;
+  const renderCTAButton = (cta: any) => {
+    if (!cta) return null;
 
-    const baseClasses = "inline-flex items-center px-8 py-3 font-medium rounded-lg transition-colors duration-200";
-    const styleClasses = {
-      primary: "bg-accent-600 hover:bg-accent-700 text-white",
-      secondary: "bg-gray-600 hover:bg-gray-700 text-white",
+    // 兼容新旧数据结构
+    const ctaData = {
+      text: cta.text || cta.cta_text || '了解更多',
+      type: cta.type || cta.cta_type || 'internal',
+      link: cta.link || cta.cta_link || '/',
+      style: (cta.style || cta.cta_style || 'primary') as 'primary' | 'secondary' | 'outline'
+    };
+
+    const baseClasses = "inline-flex items-center px-8 py-3 font-medium rounded-lg transition-all duration-300 transform hover:scale-105";
+    const styleClasses: Record<'primary' | 'secondary' | 'outline', string> = {
+      primary: "bg-accent-600 hover:bg-accent-700 text-white shadow-lg hover:shadow-xl",
+      secondary: "bg-gray-600 hover:bg-gray-700 text-white shadow-lg hover:shadow-xl",
       outline: "border-2 border-white text-white hover:bg-white hover:text-accent-600"
     };
 
-    const buttonClass = `${baseClasses} ${styleClasses[slide.cta_style || 'primary']}`;
+    const buttonClass = `${baseClasses} ${styleClasses[ctaData.style]}`;
 
-    if (slide.cta_type === 'external') {
+    if (ctaData.type === 'external') {
       return (
         <a
-          href={slide.cta_link}
+          href={ctaData.link}
           target="_blank"
           rel="noopener noreferrer"
           className={buttonClass}
         >
-          {slide.cta_text}
+          {ctaData.text}
           <ArrowRight className="ml-2 w-5 h-5" />
         </a>
       );
     }
 
-    if (slide.cta_type === 'download') {
+    if (ctaData.type === 'download') {
       return (
         <a
-          href={slide.cta_link}
+          href={ctaData.link}
           download
           className={buttonClass}
         >
-          {slide.cta_text}
+          {ctaData.text}
           <ArrowRight className="ml-2 w-5 h-5" />
         </a>
       );
     }
 
-    if (slide.cta_type === 'anchor') {
+    if (ctaData.type === 'anchor') {
       return (
         <a
-          href={slide.cta_link}
+          href={ctaData.link}
           className={buttonClass}
         >
-          {slide.cta_text}
+          {ctaData.text}
           <ArrowRight className="ml-2 w-5 h-5" />
         </a>
       );
@@ -88,10 +96,10 @@ const Home: React.FC = () => {
     // 默认为内部链接
     return (
       <Link
-        to={slide.cta_link}
+        to={ctaData.link}
         className={buttonClass}
       >
-        {slide.cta_text}
+        {ctaData.text}
         <ArrowRight className="ml-2 w-5 h-5" />
       </Link>
     );
@@ -124,53 +132,78 @@ const Home: React.FC = () => {
       name: '可扩展嵌入式系列',
       icon: Cpu,
       description: '高性能处理器，丰富扩展接口',
-      link: getProductCategoryLink('嵌入式')
+      link: getProductCategoryLink('嵌入式'),
+      gradient: 'from-blue-500 to-blue-600'
     },
     {
       name: '工业一体机',
       icon: Monitor,
       description: '集成显示，操作便捷',
-      link: getProductCategoryLink('一体机')
+      link: getProductCategoryLink('一体机'),
+      gradient: 'from-green-500 to-green-600'
     },
     {
       name: '超紧凑迷你型',
       icon: Smartphone,
       description: '小巧精致，功能强大',
-      link: getProductCategoryLink('迷你')
+      link: getProductCategoryLink('迷你'),
+      gradient: 'from-purple-500 to-purple-600'
     },
     {
       name: '定制化服务',
       icon: Settings,
       description: '个性化定制，专业服务',
-      link: getProductCategoryLink('定制')
+      link: getProductCategoryLink('定制'),
+      gradient: 'from-orange-500 to-orange-600'
     }
   ];
 
   const companyStats = [
-    { label: '成立年份', value: '2018', icon: TrendingUp },
-    { label: '服务客户', value: '500+', icon: Users },
-    { label: '产品系列', value: '20+', icon: Award },
-    { label: '覆盖地区', value: '全国', icon: Globe }
+    { label: '成立年份', value: '2018', icon: TrendingUp, color: 'text-blue-600' },
+    { label: '服务客户', value: '500+', icon: Users, color: 'text-green-600' },
+    { label: '产品系列', value: '20+', icon: Award, color: 'text-purple-600' },
+    { label: '覆盖地区', value: '全国', icon: Globe, color: 'text-orange-600' }
   ];
 
   const caseStudies = [
     {
       title: '智能制造生产线',
-      description: '为某知名汽车制造商提供完整的工控解决方案',
+      description: '为某知名汽车制造商提供完整的工控解决方案，实现生产线自动化升级',
       image: 'https://images.unsplash.com/photo-1565106430482-8f6e74349ca1?w=400&h=300&fit=crop',
-      tags: ['汽车制造', '自动化']
+      tags: ['汽车制造', '自动化'],
+      achievement: '效率提升40%'
     },
     {
       title: '机器视觉检测系统',
-      description: '高精度视觉检测，提升产品质量控制水平',
+      description: '高精度视觉检测，提升产品质量控制水平，降低人工成本',
       image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop',
-      tags: ['机器视觉', '质量控制']
+      tags: ['机器视觉', '质量控制'],
+      achievement: '检测精度99.9%'
     },
     {
       title: '边缘计算平台',
-      description: '实时数据处理，降低云端计算成本',
+      description: '实时数据处理，降低云端计算成本，提升响应速度',
       image: '/images/edge-computing-platform.svg',
-      tags: ['边缘计算', '数据处理']
+      tags: ['边缘计算', '数据处理'],
+      achievement: '响应时间<10ms'
+    }
+  ];
+
+  const features = [
+    {
+      title: '高可靠性',
+      description: '工业级设计，7x24小时稳定运行',
+      icon: CheckCircle
+    },
+    {
+      title: '强扩展性',
+      description: '丰富的接口配置，满足各种应用需求',
+      icon: Settings
+    },
+    {
+      title: '专业服务',
+      description: '从方案设计到售后维护的全程服务',
+      icon: Star
     }
   ];
 
@@ -184,14 +217,14 @@ const Home: React.FC = () => {
   }, [carouselSlides.length]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen overflow-hidden">
       {/* Hero Section with Carousel */}
-      <section className="relative h-[600px] overflow-hidden">
+      <section className="relative h-[70vh] md:h-[80vh] lg:h-[90vh] overflow-hidden">
         {isLoading ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-accent-50 to-accent-100">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">加载中...</p>
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-accent-600 border-t-transparent mx-auto mb-6"></div>
+              <p className="text-accent-700 text-lg font-medium">精彩内容加载中...</p>
             </div>
           </div>
         ) : carouselSlides.length > 0 ? (
@@ -223,11 +256,10 @@ const Home: React.FC = () => {
               return (
                 <motion.div
                   key={slide.id}
-                  className={`absolute inset-0 transition-opacity duration-1000 cursor-pointer ${
-                    index === currentSlide ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+                  className={`absolute inset-0 transition-all duration-1000 cursor-pointer ${
+                    index === currentSlide ? 'opacity-100 pointer-events-auto scale-100' : 'opacity-0 pointer-events-none scale-105'
                   }`}
                   onClick={handleSlideClick}
-                  // 移除遮罩，显示高清原图
                   style={!isVideo && !isSvg ? {
                     backgroundImage: `url(${mediaUrl})`,
                     backgroundSize: 'cover',
@@ -257,19 +289,52 @@ const Home: React.FC = () => {
                     />
                   )}
                   
+                  {/* Content overlay - 移除背景遮罩 */}
                 
 
-                  {/* 底部中间的查看更多按钮 */}
+                  {/* 底部中间的查看更多按钮 - 优化样式和动画 */}
                   <div className="absolute inset-0 flex items-end justify-center">
                     <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3 }}
+                      initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                      animate={{ 
+                        opacity: index === currentSlide ? 1 : 0, 
+                        y: index === currentSlide ? 0 : 30,
+                        scale: index === currentSlide ? 1 : 0.9
+                      }}
+                      transition={{ 
+                        duration: 0.6, 
+                        delay: 0.8,
+                        type: "spring",
+                        stiffness: 100
+                      }}
                       className="mb-16"
                     >
-                      <div className="bg-accent-600 hover:bg-accent-700 text-white px-8 py-3 rounded-full font-medium transition-colors duration-200 shadow-lg backdrop-blur-sm">
-                        查看更多
-                      </div>
+                      <motion.div 
+                        className="relative bg-gradient-to-r from-accent-500 to-accent-600 hover:from-accent-600 hover:to-accent-700 text-white px-10 py-4 rounded-full font-medium transition-all duration-300 shadow-2xl cursor-pointer group overflow-hidden"
+                        whileHover={{ 
+                          scale: 1.05,
+                          boxShadow: "0 20px 40px rgba(0,0,0,0.3)"
+                        }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        {/* 背景动画效果 */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
+                        
+                        {/* 按钮文字 */}
+                        <span className="relative z-10 flex items-center gap-2">
+                          查看更多
+                          <motion.div
+                            animate={{ y: [0, -2, 0] }}
+                            transition={{ 
+                              duration: 2,
+                              repeat: Infinity,
+                              ease: "easeInOut"
+                            }}
+                          >
+                            ↓
+                          </motion.div>
+                        </span>
+                      </motion.div>
                     </motion.div>
                   </div>
                 </motion.div>
@@ -277,13 +342,15 @@ const Home: React.FC = () => {
             })}
             
             {/* Slide Indicators */}
-            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-2">
+            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3">
               {carouselSlides.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentSlide(index)}
-                  className={`w-3 h-3 rounded-full transition-colors duration-200 ${
-                    index === currentSlide ? 'bg-accent-500' : 'bg-white/50'
+                  className={`w-4 h-4 rounded-full transition-all duration-300 border-2 border-white/50 ${
+                    index === currentSlide 
+                      ? 'bg-white scale-110 border-white shadow-lg' 
+                      : 'bg-white/30 hover:bg-white/50 hover:scale-105'
                   }`}
                 />
               ))}
@@ -307,38 +374,62 @@ const Home: React.FC = () => {
       </section>
 
       {/* Product Categories Quick Access */}
-      <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-dark-800 mb-4">产品分类</h2>
-            <p className="text-lg text-gray-600">专业工控设备，满足不同应用场景需求</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <section className="py-20 bg-gradient-to-br from-gray-50 via-white to-gray-50">
+        <div className="container mx-auto px-4 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-6">
+              产品分类
+            </h2>
+            <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+              专业工控设备，满足不同行业的自动化需求
+            </p>
+            <div className="w-24 h-1 bg-gradient-to-r from-accent-500 to-accent-600 mx-auto mt-6 rounded-full"></div>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
             {staticProductCategories.map((category, index) => {
               const IconComponent = category.icon;
               return (
                 <motion.div
                   key={category.name}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  className={`relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 p-8 text-center group cursor-pointer overflow-hidden transform hover:-translate-y-2`}
+                  onClick={() => {
+                    window.location.href = category.link;
+                  }}
                 >
-                  <Link
-                    to={category.link}
-                    className="block p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group"
-                  >
-                    <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-accent-500 to-accent-600 rounded-lg mb-4 group-hover:scale-110 transition-transform duration-300">
-                      <IconComponent className="w-8 h-8 text-white" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-dark-800 mb-2">{category.name}</h3>
-                    <p className="text-gray-600 text-sm mb-4">{category.description}</p>
-                    <div className="flex items-center text-accent-600 text-sm font-medium group-hover:text-accent-700">
-                      了解更多
-                      <ChevronRight className="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
-                    </div>
-                  </Link>
+                  {/* 背景渐变 */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}></div>
+                  
+                  {/* 图标容器 */}
+                  <div className={`relative w-20 h-20 bg-gradient-to-br ${category.gradient} rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-500 shadow-lg`}>
+                    <IconComponent className="w-10 h-10 text-white" />
+                  </div>
+                  
+                  <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-accent-600 transition-colors duration-300">
+                    {category.name}
+                  </h3>
+                  <p className="text-gray-600 mb-6 leading-relaxed">{category.description}</p>
+                  
+                  {/* 底部按钮 */}
+                  <div className="flex items-center justify-center text-accent-600 font-semibold group-hover:text-accent-700 transition-colors duration-300">
+                    <span className="mr-2">了解更多</span>
+                    <motion.div
+                      className="transform group-hover:translate-x-1 transition-transform duration-300"
+                    >
+                      →
+                    </motion.div>
+                  </div>
+                  
+                  {/* 装饰元素 */}
+                  <div className="absolute top-4 right-4 w-8 h-8 bg-gradient-to-br from-accent-100 to-accent-200 rounded-full opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
                 </motion.div>
               );
             })}
@@ -347,36 +438,64 @@ const Home: React.FC = () => {
       </section>
 
       {/* About Us Summary */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <h2 className="text-3xl font-bold text-dark-800 mb-6">关于我们</h2>
-              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+      <section className="py-20 bg-white relative overflow-hidden">
+        {/* 背景装饰 */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-accent-50 to-transparent rounded-full -translate-y-48 translate-x-48 opacity-50"></div>
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-blue-50 to-transparent rounded-full translate-y-32 -translate-x-32 opacity-50"></div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-8">
+                关于我们
+              </h2>
+              <p className="text-xl text-gray-600 mb-8 leading-relaxed">
                 深圳市研响科技有限公司成立于2018年，是一家专业从事工业控制设备研发、生产和销售的高新技术企业。
                 我们秉承"诚信、务实、创新、人才"的核心价值观，致力于为客户提供高质量、高可靠性的工控解决方案。
               </p>
-              <p className="text-gray-600 mb-8">
-                公司拥有完整的产品线，包括嵌入式工控机、工业一体机、超紧凑迷你型设备等，
-                广泛应用于智能制造、自动化控制、机器视觉、边缘计算等领域。
-              </p>
+              
+              {/* 特色功能 */}
+              <div className="space-y-6 mb-10">
+                {features.map((feature, index) => (
+                  <motion.div
+                    key={feature.title}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    className="flex items-start space-x-4"
+                  >
+                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-accent-500 to-accent-600 rounded-xl flex items-center justify-center shadow-lg">
+                      <feature.icon className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{feature.title}</h3>
+                      <p className="text-gray-600">{feature.description}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
               
               {/* Company Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
                 {companyStats.map((stat, index) => {
                   const IconComponent = stat.icon;
                   return (
                     <motion.div
                       key={stat.label}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: index * 0.1 }}
-                      viewport={{ once: true }}
-                      className="text-center p-4 bg-gray-50 rounded-lg"
+                      initial={{ opacity: 0, y: 30 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: index * 0.1 }}
+                      className="text-center group"
                     >
-                      <IconComponent className="w-8 h-8 text-accent-600 mx-auto mb-2" />
-                      <div className="text-2xl font-bold text-dark-800">{stat.value}</div>
-                      <div className="text-sm text-gray-600">{stat.label}</div>
+                      <div className={`w-16 h-16 bg-gradient-to-br from-accent-100 to-accent-200 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                        <IconComponent className={`w-8 h-8 ${stat.color}`} />
+                      </div>
+                      <div className="text-3xl font-bold text-gray-900 mb-2">{stat.value}</div>
+                      <div className="text-sm text-gray-600 font-medium">{stat.label}</div>
                     </motion.div>
                   );
                 })}
@@ -389,16 +508,40 @@ const Home: React.FC = () => {
                 了解更多
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Link>
-            </div>
+            </motion.div>
             
-            <div className="relative">
-              <img
-                src="https://images.unsplash.com/photo-1559028006-448665bd7c7f?w=600&h=400&fit=crop"
-                alt="关于我们"
-                className="rounded-xl shadow-lg"
-              />
-              <div className="absolute inset-0 bg-gradient-to-tr from-accent-600/20 to-transparent rounded-xl"></div>
-            </div>
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              className="relative"
+            >
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+                <img
+                  src="https://images.unsplash.com/photo-1559028006-448665bd7c7f?w=600&h=400&fit=crop"
+                  alt="关于我们"
+                  className="w-full h-auto transform hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+                
+                {/* 浮动卡片 */}
+                <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center">
+                      <CheckCircle className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">ISO 9001 认证</h4>
+                      <p className="text-sm text-gray-600">国际质量管理体系认证</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* 装饰元素 */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-accent-400 to-accent-500 rounded-full opacity-20 animate-pulse"></div>
+              <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-gradient-to-tr from-blue-400 to-blue-500 rounded-full opacity-15 animate-pulse" style={{animationDelay: '1s'}}></div>
+            </motion.div>
           </div>
         </div>
       </section>

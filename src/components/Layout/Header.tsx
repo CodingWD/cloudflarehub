@@ -103,12 +103,13 @@ const Header: React.FC = () => {
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
             {navigation.map((item) => (
-              <div key={item.name} className="relative group">
-                <div
-                  className="flex items-center space-x-1 cursor-pointer h-6"
-                  onMouseEnter={() => item.submenu && setOpenSubmenu(item.name)}
-                  onMouseLeave={() => item.submenu && setOpenSubmenu(null)}
-                >
+              <div 
+                key={item.name} 
+                className="relative group"
+                onMouseEnter={() => item.submenu && setOpenSubmenu(item.name)}
+                onMouseLeave={() => item.submenu && setOpenSubmenu(null)}
+              >
+                <div className="flex items-center space-x-1 cursor-pointer h-6">
                   <Link
                     to={item.href}
                     className={`text-sm font-medium transition-colors duration-200 ${

@@ -801,15 +801,7 @@ const MachineVisionSolutions: React.FC = () => {
               让机器视觉技术为您的生产质量保驾护航
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="https://www.tolang.com/Defect_detection_solutions"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-8 py-3 bg-white text-accent-600 font-medium rounded-lg hover:bg-gray-100 transition-colors duration-200"
-              >
-                查看详细方案
-                <ExternalLink className="ml-2 w-5 h-5" />
-              </a>
+            
               <Link
                 to="/sample-request"
                 className="inline-flex items-center px-8 py-3 border-2 border-white text-white font-medium rounded-lg hover:bg-white hover:text-accent-600 transition-colors duration-200"

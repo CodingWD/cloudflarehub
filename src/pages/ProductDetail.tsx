@@ -32,6 +32,10 @@ const ProductDetail: React.FC = () => {
   const [isNavSticky, setIsNavSticky] = useState(false);
   const [navOriginalTop, setNavOriginalTop] = useState(0);
   const navRef = useRef<HTMLElement>(null);
+  const [showMagnifier, setShowMagnifier] = useState(false);
+  const [magnifierPosition, setMagnifierPosition] = useState({ x: 0, y: 0 });
+  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
+  const imageRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -272,12 +276,63 @@ const ProductDetail: React.FC = () => {
             {/* Product Images */}
             <div>
               {/* Main Image */}
-              <div className="mb-4">
-                <img
-                  src={productImages[selectedImageIndex]}
-                  alt={product.product_name}
-                  className="w-full h-96 object-cover rounded-xl shadow-lg"
-                />
+              <div className="mb-4 relative">
+                <div 
+                  className="relative overflow-hidden rounded-xl shadow-lg cursor-crosshair"
+                  onMouseEnter={() => setShowMagnifier(true)}
+                  onMouseLeave={() => setShowMagnifier(false)}
+                  onMouseMove={(e) => {
+                    if (!imageRef.current) return;
+                    
+                    const rect = imageRef.current.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    // 计算图片在容器中的实际位置和尺寸
+                    const imgNaturalWidth = imageRef.current.naturalWidth;
+                    const imgNaturalHeight = imageRef.current.naturalHeight;
+                    const imgDisplayWidth = rect.width;
+                    const imgDisplayHeight = rect.height;
+                    
+                    // 计算缩放比例
+                    const scaleX = imgNaturalWidth / imgDisplayWidth;
+                    const scaleY = imgNaturalHeight / imgDisplayHeight;
+                    
+                    setMagnifierPosition({ x, y });
+                    setImagePosition({ 
+                      x: x * scaleX, 
+                      y: y * scaleY 
+                    });
+                  }}
+                >
+                  <img
+                    ref={imageRef}
+                    src={productImages[selectedImageIndex]}
+                    alt={product.product_name}
+                    className="w-full h-96 object-cover"
+                  />
+                  
+                  {/* 放大镜 */}
+                  {showMagnifier && (
+                    <div
+                      className="absolute pointer-events-none border-2 border-white shadow-lg"
+                      style={{
+                        left: magnifierPosition.x - 75,
+                        top: magnifierPosition.y - 75,
+                        width: '150px',
+                        height: '150px',
+                        borderRadius: '50%',
+                        backgroundImage: `url(${productImages[selectedImageIndex]})`,
+                        backgroundSize: `${imageRef.current?.naturalWidth || 0}px ${imageRef.current?.naturalHeight || 0}px`,
+                        backgroundPosition: `-${imagePosition.x - 75}px -${imagePosition.y - 75}px`,
+                        backgroundRepeat: 'no-repeat',
+                        transform: 'scale(2)',
+                        transformOrigin: 'center',
+                        zIndex: 10
+                      }}
+                    />
+                  )}
+                </div>
               </div>
 
               {/* Thumbnail Images */}
