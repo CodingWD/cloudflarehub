@@ -202,28 +202,35 @@ const ProductList: React.FC = () => {
                   key={product.id}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  viewport={{ once: true }}
+                  transition={{ 
+                    delay: index === 0 ? 0 : Math.min(index * 0.05, 0.3),
+                    duration: 0.3,
+                    ease: "easeOut"
+                  }}
+                  viewport={{ once: true, margin: "-50px" }}
                   className="group"
                 >
                   {viewMode === 'grid' ? (
                     // Grid View
                     <Link
                       to={`/products/${product.slug}`}
-                      className="block bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+                      className="block bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden will-change-transform"
                     >
                       <div className="relative overflow-hidden">
                         <img
                           src={getProductImage(product)}
                           alt={product.product_name}
-                          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-48 object-cover md:group-hover:scale-105 transition-transform duration-300"
+                          loading={index < 3 ? "eager" : "lazy"}
+                          decoding="async"
+                          style={{ transform: 'translateZ(0)' }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         {product.product_category && (
                           <div className="absolute top-4 left-4">
-                            <span className="px-3 py-1 bg-accent-600 text-white text-xs font-medium rounded-full">
+                            {/* <span className="px-3 py-1 bg-accent-600 text-white text-xs font-medium rounded-full">
                               {product.product_category.name}
-                            </span>
+                            </span> */}
                           </div>
                         )}
                       </div>
@@ -260,12 +267,14 @@ const ProductList: React.FC = () => {
                     // List View
                     <Link
                       to={`/products/${product.slug}`}
-                      className="flex bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+                      className="flex bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden will-change-transform"
                     >
                       <img
                         src={getProductImage(product)}
                         alt={product.product_name}
                         className="w-48 h-32 object-cover flex-shrink-0"
+                        loading={index < 3 ? "eager" : "lazy"}
+                        decoding="async"
                       />
 
                       <div className="flex-1 p-6">

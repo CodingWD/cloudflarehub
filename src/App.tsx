@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout/Layout';
+import ScrollToTop from './components/ScrollToTop';
 import Home from './pages/Home';
 import ProductCategories from './pages/ProductCategories';
 import ProductList from './pages/ProductList';
@@ -10,10 +11,12 @@ import About from './pages/About';
 import News, { NewsDetail } from './pages/News';
 import Downloads from './pages/Downloads';
 import SampleRequest from './pages/SampleRequest';
+import ContactUs from './pages/ContactUs';
 
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -27,6 +30,7 @@ function App() {
           <Route path="/news/:id" element={<NewsDetail />} />
           <Route path="/downloads" element={<Downloads />} />
           <Route path="/sample-request" element={<SampleRequest />} />
+          <Route path="/contact" element={<ContactUs />} />
         </Routes>
       </Layout>
     </Router>

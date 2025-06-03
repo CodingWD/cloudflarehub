@@ -74,6 +74,47 @@ export interface ProductCategory {
   level: number;
 }
 
+// 轮播图接口
+export interface CarouselSlide {
+  id: number;
+  documentId: string;
+  title: string;           // 轮播图标题
+  subtitle?: string;       // 副标题或描述文本
+  order: number;           // 显示顺序
+  media_type: 'image' | 'video' | 'svg';  // 媒体类型
+  cta_text?: string;       // 按钮文本
+  cta_type?: 'internal' | 'external' | 'anchor' | 'download';  // 链接类型
+  cta_link?: string;       // 链接地址
+  cta_style?: 'primary' | 'secondary' | 'outline';  // 按钮样式
+  is_active: boolean;      // 是否启用
+  locale?: string;         // 语言代码
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+  image?: {
+    id: number;
+    name: string;
+    url: string;
+    formats?: {
+      thumbnail?: { url: string };
+      small?: { url: string };
+      medium?: { url: string };
+      large?: { url: string };
+    };
+  };
+  video?: {
+    id: number;
+    name: string;
+    url: string;
+    mime: string;
+    ext: string;
+  };
+  svg_code?: string;       // SVG代码
+  // 处理后的URL
+  imageUrl?: string;
+  videoUrl?: string;
+}
+
 // 新闻文章接口
 export interface NewsArticle {
   id: number;
@@ -422,6 +463,107 @@ export class ApiService {
     } catch (error) {
       console.error('获取下载中心项目失败:', error);
       throw error;
+    }
+  }
+
+  // 获取轮播图数据
+  static async getCarouselSlides(): Promise<CarouselSlide[]> {
+    try {
+      const response = await api.get<ApiResponse<CarouselSlide>>('/api/carousel-slides?populate=*&sort=order:asc&filters[is_active][$eq]=true');
+
+      // 处理每个轮播图，添加媒体URL
+      const slides = response.data.data.map(slide => {
+        let imageUrl: string | undefined = undefined;
+        let videoUrl: string | undefined = undefined;
+
+        // 处理图片URL
+        if (slide.media_type === 'image' && slide.image) {
+          imageUrl = `${BASE_URL}${slide.image.url}`;
+        }
+
+        // 处理视频URL
+        if (slide.media_type === 'video' && slide.video) {
+          videoUrl = `${BASE_URL}${slide.video.url}`;
+        }
+
+        // 确保CTA字段存在，如果后端没有提供则使用默认值
+        const processedSlide = {
+          ...slide,
+          imageUrl,
+          videoUrl,
+          // 确保CTA字段正确映射
+          cta_text: slide.cta_text || '了解更多',
+          cta_type: slide.cta_type || 'internal',
+          cta_link: slide.cta_link || '/products',
+          cta_style: slide.cta_style || 'primary'
+        };
+
+        // 调试输出，检查数据结构
+        console.log('处理后的轮播图数据:', processedSlide);
+        
+        return processedSlide;
+      });
+
+      return slides;
+    } catch (error) {
+      console.warn('轮播图API暂未配置，使用默认数据:', error instanceof Error ? error.message : String(error));
+      // 返回默认轮播图数据作为后备
+      return [
+        {
+          id: 1,
+          documentId: 'default1',
+          title: '引领工业4.0智能制造',
+          subtitle: '专业工控机解决方案提供商',
+          order: 1,
+          media_type: 'image' as const,
+          cta_text: '了解产品',
+          cta_type: 'internal' as const,
+          cta_link: '/products',
+          cta_style: 'primary' as const,
+          is_active: true,
+          locale: 'zh-CN',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          publishedAt: new Date().toISOString(),
+          imageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1200&h=600&fit=crop'
+        },
+        {
+          id: 2,
+          documentId: 'default2',
+          title: '边缘计算新突破',
+          subtitle: '高性能嵌入式工控平台',
+          order: 2,
+          media_type: 'svg' as const,
+          cta_text: '技术详情',
+          cta_type: 'internal' as const,
+          cta_link: '/applications',
+          cta_style: 'primary' as const,
+          is_active: true,
+          locale: 'zh-CN',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          publishedAt: new Date().toISOString(),
+          svg_code: '/images/edge-computing-breakthrough.svg'
+        },
+        {
+          id: 3,
+          documentId: 'default3',
+          title: '定制化服务',
+          subtitle: '满足您的个性化需求',
+          order: 3,
+          media_type: 'image' as const,
+          cta_text: '立即咨询',
+          cta_type: 'internal' as const,
+          cta_link: '/sample-request',
+          cta_style: 'primary' as const,
+          is_active: true,
+          locale: 'zh-CN',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          publishedAt: new Date().toISOString(),
+          imageUrl: 'https://images.unsplash.com/photo-1559028006-448665bd7c7f?w=1200&h=600&fit=crop'
+        }
+      ];
     }
   }
 

@@ -179,7 +179,7 @@ const ProductDetail: React.FC = () => {
     { label: '网卡', value: product.wangKa, icon: Wifi },
     { label: '显示', value: product.xianShiJieKou, icon: Monitor },
     { label: '电源', value: product.powerType, icon: Zap },
-    { label: '操作系统', value: product.operating_system, icon: Package },
+    { label: '系统', value: product.operating_system, icon: Package },
     { label: '工作温度', value: product.operating_temperature, icon: Thermometer },
   ].filter(spec => spec.value);
 

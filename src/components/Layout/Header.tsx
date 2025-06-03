@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X, ChevronDown, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ApiService, ProductCategory } from '../../services/api';
+import GlobalSearch from '../GlobalSearch';
 
 // 定义子菜单项的类型
 interface SubmenuItem {
@@ -20,6 +21,7 @@ interface NavigationItem {
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const location = useLocation();
   // const [productCategories, setProductCategories] = useState<ProductCategory[]>([]);
 
@@ -36,6 +38,7 @@ const Header: React.FC = () => {
     { name: '新闻动态', href: '/news' },
     { name: '下载专区', href: '/downloads' },
     { name: '样品申请', href: '/sample-request' },
+    { name: '联系我们', href: '/contact' },
   ]);
 
   // 获取产品分类
@@ -149,26 +152,50 @@ const Header: React.FC = () => {
             ))}
           </nav>
 
-          {/* Action Buttons */}
+          {/* Search and Action Buttons */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* 搜索按钮 */}
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="p-2 text-dark-600 hover:text-accent-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+              title="全局搜索"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+            
             <Link
               to="/sample-request"
               className="px-4 py-2 text-accent-600 border border-accent-600 rounded-lg hover:bg-accent-50 transition-colors duration-200"
             >
               申请样品
             </Link>
-            <button className="px-4 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-700 transition-colors duration-200">
+            <Link
+              to="/contact"
+              className="px-4 py-2 bg-accent-600 text-white rounded-lg hover:bg-accent-700 transition-colors duration-200"
+            >
               联系我们
-            </button>
+            </Link>
           </div>
 
-          {/* Mobile menu button */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 rounded-md text-dark-600 hover:text-accent-600 hover:bg-gray-100 transition-colors duration-200"
-          >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Mobile Search and Menu */}
+          <div className="md:hidden flex items-center space-x-2">
+            {/* 移动端搜索按钮 */}
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="p-2 rounded-md text-dark-600 hover:text-accent-600 hover:bg-gray-100 transition-colors duration-200"
+              title="搜索"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+            
+            {/* 移动端菜单按钮 */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 rounded-md text-dark-600 hover:text-accent-600 hover:bg-gray-100 transition-colors duration-200"
+            >
+              {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -222,7 +249,7 @@ const Header: React.FC = () => {
                   申请样品
                 </Link>
                 <Link
-                  to="/about"
+                  to="/contact"
                   className="block w-full px-4 py-2 text-center bg-accent-600 text-white rounded-lg hover:bg-accent-700 transition-colors duration-200"
                   onClick={() => setIsMenuOpen(false)}
                 >
@@ -233,6 +260,12 @@ const Header: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      
+      {/* 全局搜索组件 */}
+      <GlobalSearch 
+        isOpen={isSearchOpen} 
+        onClose={() => setIsSearchOpen(false)} 
+      />
     </header>
   );
 };
