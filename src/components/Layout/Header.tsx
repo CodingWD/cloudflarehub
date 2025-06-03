@@ -22,6 +22,7 @@ const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [mobileOpenSubmenu, setMobileOpenSubmenu] = useState<string | null>(null);
   const location = useLocation();
   // const [productCategories, setProductCategories] = useState<ProductCategory[]>([]);
 
@@ -34,11 +35,17 @@ const Header: React.FC = () => {
       submenu: [] // 初始化为空数组，稍后在useEffect中获取categories后再更新
     },
     { name: '行业应用', href: '/applications' },
-    { name: '关于我们', href: '/about' },
-    { name: '新闻动态', href: '/news' },
+    {
+      name: '关于我们',
+      href: '/about',
+      submenu: [
+        { name: '公司简介', href: '/about' },
+        { name: '新闻动态', href: '/news' },
+        { name: '联系我们', href: '/contact' }
+      ]
+    },
     { name: '下载专区', href: '/downloads' },
     { name: '样品申请', href: '/sample-request' },
-    { name: '联系我们', href: '/contact' },
   ]);
 
   // 获取产品分类
@@ -97,56 +104,49 @@ const Header: React.FC = () => {
           <nav className="hidden md:flex space-x-8">
             {navigation.map((item) => (
               <div key={item.name} className="relative group">
-                {item.submenu ? (
-                  <div
-                    className="flex items-center space-x-1 cursor-pointer"
-                    onMouseEnter={() => setOpenSubmenu(item.name)}
-                    onMouseLeave={() => setOpenSubmenu(null)}
-                  >
-                    <Link
-                      to={item.href}
-                      className={`text-sm font-medium transition-colors duration-200 ${isActive(item.href)
-                        ? 'text-accent-600'
-                        : 'text-dark-600 hover:text-accent-600'
-                        }`}
-                    >
-                      {item.name}
-                    </Link>
-                    <ChevronDown className="w-4 h-4 text-dark-400" />
-
-                    {/* Submenu */}
-                    <AnimatePresence>
-                      {openSubmenu === item.name && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.2 }}
-                          className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2"
-                        >
-                          {item.submenu.map((subItem) => (
-                            <Link
-                              key={subItem.name}
-                              to={subItem.href}
-                              className="block px-4 py-2 text-sm text-dark-600 hover:text-accent-600 hover:bg-gray-50 transition-colors duration-200"
-                            >
-                              {subItem.name}
-                            </Link>
-                          ))}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                ) : (
+                <div
+                  className="flex items-center space-x-1 cursor-pointer h-6"
+                  onMouseEnter={() => item.submenu && setOpenSubmenu(item.name)}
+                  onMouseLeave={() => item.submenu && setOpenSubmenu(null)}
+                >
                   <Link
                     to={item.href}
-                    className={`text-sm font-medium transition-colors duration-200 ${isActive(item.href)
-                      ? 'text-accent-600'
-                      : 'text-dark-600 hover:text-accent-600'
-                      }`}
+                    className={`text-sm font-medium transition-colors duration-200 ${
+                      isActive(item.href)
+                        ? 'text-accent-600'
+                        : 'text-dark-600 hover:text-accent-600'
+                    }`}
                   >
                     {item.name}
                   </Link>
+                  {item.submenu && (
+                    <ChevronDown className="w-4 h-4 text-dark-400" />
+                  )}
+                </div>
+
+                {/* Submenu */}
+                {item.submenu && (
+                  <AnimatePresence>
+                    {openSubmenu === item.name && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute top-full left-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2"
+                      >
+                        {item.submenu.map((subItem) => (
+                          <Link
+                            key={subItem.name}
+                            to={subItem.href}
+                            className="block px-4 py-2 text-sm text-dark-600 hover:text-accent-600 hover:bg-gray-50 transition-colors duration-200"
+                          >
+                            {subItem.name}
+                          </Link>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 )}
               </div>
             ))}
@@ -212,29 +212,61 @@ const Header: React.FC = () => {
             <div className="px-4 py-2 space-y-1">
               {navigation.map((item) => (
                 <div key={item.name}>
-                  <Link
-                    to={item.href}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${isActive(item.href)
-                      ? 'text-accent-600 bg-accent-50'
-                      : 'text-dark-600 hover:text-accent-600 hover:bg-gray-50'
-                      }`}
-                  >
-                    {item.name}
-                  </Link>
-                  {item.submenu && (
-                    <div className="ml-4 space-y-1">
-                      {item.submenu.map((subItem) => (
-                        <Link
-                          key={subItem.name}
-                          to={subItem.href}
-                          onClick={() => setIsMenuOpen(false)}
-                          className="block px-3 py-2 rounded-md text-sm text-dark-500 hover:text-accent-600 hover:bg-gray-50 transition-colors duration-200"
-                        >
-                          {subItem.name}
-                        </Link>
-                      ))}
+                  {item.submenu ? (
+                    <div>
+                      <button
+                        onClick={() => setMobileOpenSubmenu(mobileOpenSubmenu === item.name ? null : item.name)}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+                          isActive(item.href)
+                            ? 'text-accent-600 bg-accent-50'
+                            : 'text-dark-600 hover:text-accent-600 hover:bg-gray-50'
+                        }`}
+                      >
+                        <span>{item.name}</span>
+                        <ChevronDown 
+                          className={`w-4 h-4 transition-transform duration-200 ${
+                            mobileOpenSubmenu === item.name ? 'rotate-180' : ''
+                          }`} 
+                        />
+                      </button>
+                      <AnimatePresence>
+                        {mobileOpenSubmenu === item.name && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="ml-4 space-y-1 overflow-hidden"
+                          >
+                            {item.submenu.map((subItem) => (
+                              <Link
+                                key={subItem.name}
+                                to={subItem.href}
+                                onClick={() => {
+                                  setIsMenuOpen(false);
+                                  setMobileOpenSubmenu(null);
+                                }}
+                                className="block px-3 py-2 rounded-md text-sm text-dark-500 hover:text-accent-600 hover:bg-gray-50 transition-colors duration-200"
+                              >
+                                {subItem.name}
+                              </Link>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
+                  ) : (
+                    <Link
+                      to={item.href}
+                      onClick={() => setIsMenuOpen(false)}
+                      className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
+                        isActive(item.href)
+                          ? 'text-accent-600 bg-accent-50'
+                          : 'text-dark-600 hover:text-accent-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      {item.name}
+                    </Link>
                   )}
                 </div>
               ))}
