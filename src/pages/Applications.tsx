@@ -19,42 +19,6 @@ import {
 const Applications: React.FC = () => {
   const industries = [
     {
-      title: '智能制造',
-      description: '为现代化工厂提供全面的自动化控制解决方案',
-      icon: Factory,
-      image: 'https://images.unsplash.com/photo-1565106430482-8f6e74349ca1?w=800&h=600&fit=crop',
-      features: [
-        '生产线自动化控制',
-        '设备状态监控',
-        '质量管理系统',
-        '数据采集与分析'
-      ],
-      benefits: [
-        '提升生产效率30%',
-        '降低人工成本',
-        '提高产品质量',
-        '实现智能化管理'
-      ]
-    },
-    {
-      title: '汽车制造',
-      description: '专为汽车制造业设计的高可靠性工控解决方案',
-      icon: Car,
-      image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop',
-      features: [
-        '焊接机器人控制',
-        '装配线管理',
-        '质量检测系统',
-        '物流自动化'
-      ],
-      benefits: [
-        '零缺陷生产',
-        '柔性制造',
-        '追溯管理',
-        '成本优化'
-      ]
-    },
-    {
       title: '能源电力',
       description: '为电力系统提供稳定可靠的监控和控制设备',
       icon: Zap,
@@ -67,27 +31,9 @@ const Applications: React.FC = () => {
       ],
       benefits: [
         '提高供电可靠性',
-        '优化能源配置',
         '降低运维成本',
+        '优化能源配置',
         '环保节能'
-      ]
-    },
-    {
-      title: '物流仓储',
-      description: '智能仓储管理系统，提升物流效率',
-      icon: Package,
-      image: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800&h=600&fit=crop',
-      features: [
-        '自动化分拣',
-        '库存管理',
-        'AGV调度系统',
-        '订单处理'
-      ],
-      benefits: [
-        '提升分拣效率',
-        '减少人工错误',
-        '优化库存周转',
-        '降低运营成本'
       ]
     },
     {
@@ -120,10 +66,10 @@ const Applications: React.FC = () => {
         '表面检查'
       ],
       benefits: [
-        '提高检测精度',
-        '降低漏检率',
-        '提升生产速度',
-        '减少人工成本'
+        '检测速度提升10倍',
+        '漏检率降低至0.01%',
+        '检测标准统一',
+        '人工成本节省70%'
       ]
     }
   ];
@@ -285,9 +231,32 @@ const Applications: React.FC = () => {
                       </ul>
                     </div>
                     
-                    <button className="w-full bg-accent-600 hover:bg-accent-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200">
-                      了解更多
-                    </button>
+                    {industry.title === '能源电力' ? (
+                      <Link
+                        to="/energy-power-solutions"
+                        className="block w-full bg-accent-600 hover:bg-accent-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 text-center"
+                      >
+                        了解更多
+                      </Link>
+                    ) : industry.title === '机器视觉' ? (
+                      <Link
+                        to="/machine-vision-solutions"
+                        className="block w-full bg-accent-600 hover:bg-accent-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 text-center"
+                      >
+                        了解更多
+                      </Link>
+                    ) : industry.title === '边缘计算' ? (
+                      <Link
+                        to="/edge-computing-solutions"
+                        className="block w-full bg-accent-600 hover:bg-accent-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 text-center"
+                      >
+                        了解更多
+                      </Link>
+                    ) : (
+                      <button className="w-full bg-accent-600 hover:bg-accent-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200">
+                        了解更多
+                      </button>
+                    )}
                   </div>
                 </motion.div>
               );

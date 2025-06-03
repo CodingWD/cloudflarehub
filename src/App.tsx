@@ -12,6 +12,9 @@ import News, { NewsDetail } from './pages/News';
 import Downloads from './pages/Downloads';
 import SampleRequest from './pages/SampleRequest';
 import ContactUs from './pages/ContactUs';
+import EnergyPowerSolutions from './pages/EnergyPowerSolutions';
+import MachineVisionSolutions from './pages/MachineVisionSolutions';
+import EdgeComputingSolutions from './pages/EdgeComputingSolutions';
 
 function App() {
   return (
@@ -31,6 +34,9 @@ function App() {
           <Route path="/downloads" element={<Downloads />} />
           <Route path="/sample-request" element={<SampleRequest />} />
           <Route path="/contact" element={<ContactUs />} />
+          <Route path="/energy-power-solutions" element={<EnergyPowerSolutions />} />
+          <Route path="/machine-vision-solutions" element={<MachineVisionSolutions />} />
+          <Route path="/edge-computing-solutions" element={<EdgeComputingSolutions />} />
         </Routes>
       </Layout>
     </Router>
