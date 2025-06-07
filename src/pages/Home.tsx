@@ -15,11 +15,15 @@ const Home: React.FC = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
+        console.log('开始获取首页数据...');
         const [categoriesData, newsData, carouselData] = await Promise.all([
           ApiService.getProductCategories(),
           ApiService.getNewsArticles(3),
           ApiService.getCarouselSlides()
         ]);
+        console.log('轮播图数据:', carouselData);
+        console.log('产品分类数据:', categoriesData);
+        console.log('新闻数据:', newsData);
         setCategories(categoriesData);
         setNews(newsData);
         setCarouselSlides(carouselData);
@@ -107,14 +111,33 @@ const Home: React.FC = () => {
 
   // 获取媒体URL的函数
   const getMediaUrl = (slide: CarouselSlide): string => {
+    console.log('处理轮播图媒体URL:', slide);
     switch (slide.media_type) {
       case 'image':
-        return slide.imageUrl || '';
+        const imageUrl = slide.imageUrl || '';
+        console.log('图片URL:', imageUrl);
+        return imageUrl;
       case 'video':
-        return slide.videoUrl || '';
+        const videoUrl = slide.videoUrl || '';
+        console.log('视频URL:', videoUrl);
+        return videoUrl;
       case 'svg':
-        return slide.svg_code || '';
+        // 如果svg_code是文件路径，直接返回；如果是SVG代码，需要特殊处理
+        if (slide.svg_code) {
+          // 如果是文件路径（以/开头），直接返回
+          if (slide.svg_code.startsWith('/') || slide.svg_code.startsWith('http')) {
+            console.log('SVG文件路径:', slide.svg_code);
+            return slide.svg_code;
+          }
+          // 如果是SVG代码，创建data URL
+          const dataUrl = `data:image/svg+xml;base64,${btoa(slide.svg_code)}`;
+          console.log('SVG数据URL:', dataUrl);
+          return dataUrl;
+        }
+        console.log('SVG代码为空');
+        return '';
       default:
+        console.log('未知媒体类型:', slide.media_type);
         return '';
     }
   };
@@ -620,7 +643,7 @@ const Home: React.FC = () => {
                 <div className="h-48 overflow-hidden">
                   {article.fengmiantu?.url ? (
                     <img 
-                      src={article.firstImageUrl || `http://192.168.31.177:1337${article.fengmiantu.url}`}
+                      src={article.firstImageUrl || `http://47.128.84.235:1337${article.fengmiantu.url}`}
                       alt={article.title}
                       className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />

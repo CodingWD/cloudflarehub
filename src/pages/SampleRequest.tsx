@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Package, User, Mail, Phone, Calendar, FileText, Send, CheckCircle, AlertCircle } from 'lucide-react';
+import { Package, User, FileText, Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { ApiService } from '../services/api';
 
 interface SampleRequestForm {
   name: string;
   phone: string;
   email: string;
-  companyname: string;
+  company: string;
   position: string;
   sampleName: string;
   quantity: number;
@@ -18,12 +18,27 @@ interface SampleRequestForm {
   urgency: 'normal' | 'urgent' | 'very_urgent';
 }
 
+interface SampleRequestErrors {
+  name?: string;
+  phone?: string;
+  email?: string;
+  company?: string;
+  position?: string;
+  sampleName?: string;
+  quantity?: string;
+  requiredDate?: string;
+  purpose?: string;
+  requirements?: string;
+  address?: string;
+  urgency?: string;
+}
+
 const SampleRequest: React.FC = () => {
   const [formData, setFormData] = useState<SampleRequestForm>({
     name: '',
     phone: '',
     email: '',
-    companyname: '',
+    company: '',
     position: '',
     sampleName: '',
     quantity: 1,
@@ -36,7 +51,7 @@ const SampleRequest: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [errors, setErrors] = useState<Partial<SampleRequestForm>>({});
+  const [errors, setErrors] = useState<SampleRequestErrors>({});
 
   const sampleProducts = [
     'YX-IPC-3000 嵌入式工控机',
@@ -55,19 +70,60 @@ const SampleRequest: React.FC = () => {
   ];
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<SampleRequestForm> = {};
+    const newErrors: SampleRequestErrors = {};
 
-    if (!formData.name.trim()) newErrors.name = '请输入姓名';
-    if (!formData.phone.trim()) newErrors.phone = '请输入手机号码';
-    else if (!/^1[3-9]\d{9}$/.test(formData.phone)) newErrors.phone = '请输入有效的手机号码';
+    // 基本信息验证
+    if (!formData.name.trim()) {
+      newErrors.name = '请输入姓名';
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = '姓名至少需要2个字符';
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = '请输入手机号码';
+    } else if (!/^1[3-9]\d{9}$/.test(formData.phone)) {
+      newErrors.phone = '请输入有效的手机号码';
+    }
     
-    if (!formData.email.trim()) newErrors.email = '请输入邮箱地址';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = '请输入有效的邮箱地址';
+    if (!formData.email.trim()) {
+      newErrors.email = '请输入邮箱地址';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = '请输入有效的邮箱地址';
+    }
     
-    if (!formData.companyname.trim()) newErrors.companyname = '请输入公司名称';
-    if (!formData.sampleName.trim()) newErrors.sampleName = '请选择样品名称';
-    if (!formData.requiredDate) newErrors.requiredDate = '请选择需求时间';
-    if (!formData.requirements.trim()) newErrors.requirements = '请输入需求概述';
+    if (!formData.company.trim()) {
+      newErrors.company = '请输入公司名称';
+    } else if (formData.company.trim().length < 2) {
+      newErrors.company = '公司名称至少需要2个字符';
+    }
+
+    // 样品信息验证
+    if (!formData.sampleName.trim()) {
+      newErrors.sampleName = '请选择样品名称';
+    }
+
+    if (formData.quantity < 1) {
+      newErrors.quantity = '数量至少为1';
+    } else if (formData.quantity > 100) {
+      newErrors.quantity = '数量不能超过100';
+    }
+
+    if (!formData.requiredDate) {
+      newErrors.requiredDate = '请选择需求时间';
+    } else {
+      const selectedDate = new Date(formData.requiredDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (selectedDate < today) {
+        newErrors.requiredDate = '需求时间不能早于今天';
+      }
+    }
+
+    if (!formData.requirements.trim()) {
+      newErrors.requirements = '请输入需求概述';
+    } else if (formData.requirements.trim().length < 10) {
+      newErrors.requirements = '需求概述至少需要10个字符';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -85,6 +141,13 @@ const SampleRequest: React.FC = () => {
     e.preventDefault();
     
     if (!validateForm()) {
+      // 滚动到第一个错误字段
+      const firstErrorField = Object.keys(errors)[0];
+      if (firstErrorField) {
+        const element = document.getElementById(firstErrorField);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element?.focus();
+      }
       return;
     }
 
@@ -101,7 +164,7 @@ const SampleRequest: React.FC = () => {
         name: '',
         phone: '',
         email: '',
-        companyname: '',
+        company: '',
         position: '',
         sampleName: '',
         quantity: 1,
@@ -111,9 +174,23 @@ const SampleRequest: React.FC = () => {
         address: '',
         urgency: 'normal'
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('提交样品申请失败:', error);
       setSubmitStatus('error');
+      
+      // 处理具体的错误信息
+      if (error.message) {
+        // 如果是验证错误，显示具体的错误信息
+        if (error.message.includes('邮箱') || error.message.includes('手机') || 
+            error.message.includes('必填') || error.message.includes('数量')) {
+          // 将API错误转换为表单验证错误
+          const newErrors: SampleRequestErrors = {};
+          if (error.message.includes('邮箱')) newErrors.email = error.message;
+          if (error.message.includes('手机')) newErrors.phone = error.message;
+          if (error.message.includes('数量')) newErrors.quantity = error.message;
+          setErrors(newErrors);
+        }
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -216,6 +293,7 @@ const SampleRequest: React.FC = () => {
                   </label>
                   <input
                     type="text"
+                    id="name"
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
                     className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 focus:outline-none ${
@@ -233,6 +311,7 @@ const SampleRequest: React.FC = () => {
                   </label>
                   <input
                     type="tel"
+                    id="phone"
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                     className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 focus:outline-none ${
@@ -250,6 +329,7 @@ const SampleRequest: React.FC = () => {
                   </label>
                   <input
                     type="email"
+                    id="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
                     className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 focus:outline-none ${
@@ -267,14 +347,33 @@ const SampleRequest: React.FC = () => {
                   </label>
                   <input
                     type="text"
-                    value={formData.companyname}
-    onChange={(e) => handleInputChange('companyname', e.target.value)}
+                    id="company"
+                    value={formData.company}
+                    onChange={(e) => handleInputChange('company', e.target.value)}
                     className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 focus:outline-none ${
-                      errors.companyname ? 'ring-2 ring-red-500' : ''
+                      errors.company ? 'ring-2 ring-red-500' : ''
                     }`}
                     placeholder="请输入您的公司名称"
                   />
-                  {errors.companyname && <p className="mt-1 text-sm text-red-500">{errors.companyname}</p>}
+                  {errors.company && <p className="mt-1 text-sm text-red-500">{errors.company}</p>}
+                </div>
+
+                {/* 职位 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    职位 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="position"
+                    value={formData.position}
+                    onChange={(e) => handleInputChange('position', e.target.value)}
+                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 focus:outline-none ${
+                      errors.position ? 'ring-2 ring-red-500' : ''
+                    }`}
+                    placeholder="请输入您的职位"
+                  />
+                  {errors.position && <p className="mt-1 text-sm text-red-500">{errors.position}</p>}
                 </div>
 
                 {/* 样品信息 */}
@@ -291,6 +390,7 @@ const SampleRequest: React.FC = () => {
                     样品名称 <span className="text-red-500">*</span>
                   </label>
                   <select
+                    id="sampleName"
                     value={formData.sampleName}
                     onChange={(e) => handleInputChange('sampleName', e.target.value)}
                     className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 focus:outline-none ${
@@ -307,6 +407,27 @@ const SampleRequest: React.FC = () => {
                   {errors.sampleName && <p className="mt-1 text-sm text-red-500">{errors.sampleName}</p>}
                 </div>
 
+                {/* 申请数量 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    申请数量 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="quantity"
+                    min="1"
+                    max="100"
+                    value={formData.quantity}
+                    onChange={(e) => handleInputChange('quantity', parseInt(e.target.value) || 1)}
+                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 focus:outline-none ${
+                      errors.quantity ? 'ring-2 ring-red-500' : ''
+                    }`}
+                    placeholder="请输入申请数量"
+                  />
+                  {errors.quantity && <p className="mt-1 text-sm text-red-500">{errors.quantity}</p>}
+                  <p className="mt-1 text-sm text-gray-500">建议申请数量：1-5台</p>
+                </div>
+
                 {/* 需求时间 */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -314,6 +435,7 @@ const SampleRequest: React.FC = () => {
                   </label>
                   <input
                     type="date"
+                    id="requiredDate"
                     min={getMinDate()}
                     value={formData.requiredDate}
                     onChange={(e) => handleInputChange('requiredDate', e.target.value)}
@@ -322,6 +444,7 @@ const SampleRequest: React.FC = () => {
                     }`}
                   />
                   {errors.requiredDate && <p className="mt-1 text-sm text-red-500">{errors.requiredDate}</p>}
+                  <p className="mt-1 text-sm text-gray-500">最早可选择明天</p>
                 </div>
 
                 {/* 紧急程度 */}
@@ -342,6 +465,24 @@ const SampleRequest: React.FC = () => {
                   </select>
                 </div>
 
+                {/* 用途 */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    用途 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="purpose"
+                    value={formData.purpose}
+                    onChange={(e) => handleInputChange('purpose', e.target.value)}
+                    className={`w-full px-4 py-3 bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:border-accent-500 focus:outline-none ${
+                      errors.purpose ? 'ring-2 ring-red-500' : ''
+                    }`}
+                    placeholder="请简要说明样品的用途，如：产品测试、技术评估、项目验证等"
+                  />
+                  {errors.purpose && <p className="mt-1 text-sm text-red-500">{errors.purpose}</p>}
+                </div>
+
                 {/* 需求概述 */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -349,6 +490,7 @@ const SampleRequest: React.FC = () => {
                   </label>
                   <textarea
                     rows={4}
+                    id="requirements"
                     value={formData.requirements}
                     onChange={(e) => handleInputChange('requirements', e.target.value)}
                     className={`w-full px-4 py-3  bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:outline-none resize-none ${
@@ -366,6 +508,7 @@ const SampleRequest: React.FC = () => {
                   </label>
                   <textarea
                     rows={3}
+                    id="address"
                     value={formData.address}
                     onChange={(e) => handleInputChange('address', e.target.value)}
                     className={`w-full px-4 py-3  bg-white text-gray-900 rounded-lg border border-gray-300 focus:ring-2 focus:ring-accent-500 focus:outline-none resize-none ${

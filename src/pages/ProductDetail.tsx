@@ -21,7 +21,7 @@ import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 
 // 添加BASE_URL常量
-const BASE_URL = 'http://192.168.31.177:1337';
+const BASE_URL = 'http://47.128.84.235:1337';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();

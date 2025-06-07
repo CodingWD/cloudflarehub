@@ -62,7 +62,7 @@ const ProductList: React.FC = () => {
     }
     // 如果有图片数组，使用第一张图片
     if (product.image && product.image.length > 0) {
-      return `http://192.168.31.177:1337${product.image[0].url}`;
+      return `http://47.128.84.235:1337${product.image[0].url}`;
     }
     // 使用占位图片作为后备
     return 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop';

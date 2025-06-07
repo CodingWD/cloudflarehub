@@ -28,6 +28,7 @@ const About: React.FC = () => {
   });
   const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [companyInfo, setCompanyInfo] = useState<Company | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -55,11 +56,81 @@ const About: React.FC = () => {
       ...prev,
       [name]: value
     }));
+    
+    // 清除对应字段的错误信息
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: {[key: string]: string} = {};
+    
+    // 必填字段验证
+    if (!formData.name.trim()) {
+      newErrors.name = '请输入姓名';
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = '姓名至少需要2个字符';
+    }
+    
+    if (!formData.company.trim()) {
+      newErrors.company = '请输入公司名称';
+    } else if (formData.company.trim().length < 2) {
+      newErrors.company = '公司名称至少需要2个字符';
+    }
+    
+    if (!formData.email.trim()) {
+      newErrors.email = '请输入邮箱地址';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = '请输入有效的邮箱地址';
+    }
+    
+    if (!formData.phone.trim()) {
+      newErrors.phone = '请输入手机号码';
+    } else if (!/^1[3-9]\d{9}$/.test(formData.phone)) {
+      newErrors.phone = '请输入有效的手机号码';
+    }
+    
+    if (!formData.requirements.trim()) {
+      newErrors.requirements = '请描述您的定制需求';
+    } else if (formData.requirements.trim().length < 10) {
+      newErrors.requirements = '需求描述至少需要10个字符';
+    } else if (formData.requirements.trim().length > 1000) {
+      newErrors.requirements = '需求描述不能超过1000个字符';
+    }
+    
+    if (!formData.budget) {
+      newErrors.budget = '请选择预算范围';
+    }
+    
+    if (!formData.timeline) {
+      newErrors.timeline = '请选择期望完成时间';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      // 滚动到第一个错误字段
+      const firstErrorField = Object.keys(errors)[0];
+      if (firstErrorField) {
+        const element = document.getElementById(firstErrorField);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element?.focus();
+      }
+      return;
+    }
+    
     setFormStatus('submitting');
+    setErrorMessage('');
     
     try {
       await ApiService.submitCustomRequest(formData);
@@ -73,10 +144,29 @@ const About: React.FC = () => {
         budget: '',
         timeline: ''
       });
-    } catch (error) {
+      setErrors({});
+    } catch (error: any) {
       console.error('提交定制需求失败:', error);
       setFormStatus('error');
-      setErrorMessage('提交失败，请稍后再试或直接联系我们');
+      
+      // 处理具体的错误信息
+      if (error.message) {
+        // 如果是验证错误，显示具体的错误信息
+        if (error.message.includes('邮箱') || error.message.includes('手机') || 
+            error.message.includes('必填') || error.message.includes('需求')) {
+          // 将API错误转换为表单验证错误
+          const newErrors: {[key: string]: string} = {};
+          if (error.message.includes('邮箱')) newErrors.email = error.message;
+          if (error.message.includes('手机')) newErrors.phone = error.message;
+          if (error.message.includes('需求')) newErrors.requirements = error.message;
+          setErrors(newErrors);
+          setErrorMessage('');
+        } else {
+          setErrorMessage(error.message);
+        }
+      } else {
+        setErrorMessage('提交失败，请稍后再试或直接联系我们');
+      }
     }
   };
 
@@ -415,8 +505,13 @@ const About: React.FC = () => {
                       value={formData.name}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+                      className={`w-full px-4 py-2 bg-gray-100 border rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent ${
+                        errors.name ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
+                    {errors.name && (
+                      <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                    )}
                   </div>
                   
                   <div>
@@ -428,8 +523,13 @@ const About: React.FC = () => {
                       value={formData.company}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+                      className={`w-full px-4 py-2 bg-gray-100 border rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent ${
+                        errors.company ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
+                    {errors.company && (
+                      <p className="mt-1 text-sm text-red-600">{errors.company}</p>
+                    )}
                   </div>
                   
                   <div>
@@ -441,8 +541,13 @@ const About: React.FC = () => {
                       value={formData.email}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+                      className={`w-full px-4 py-2 bg-gray-100 border rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent ${
+                        errors.email ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
+                    {errors.email && (
+                      <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+                    )}
                   </div>
                   
                   <div>
@@ -454,8 +559,13 @@ const About: React.FC = () => {
                       value={formData.phone}
                       onChange={handleInputChange}
                       required
-                      className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+                      className={`w-full px-4 py-2 bg-gray-100 border rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent ${
+                        errors.phone ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
+                    {errors.phone && (
+                      <p className="mt-1 text-sm text-red-600">{errors.phone}</p>
+                    )}
                   </div>
                 </div>
                 
@@ -468,43 +578,64 @@ const About: React.FC = () => {
                     onChange={handleInputChange}
                     required
                     rows={5}
-                    className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+                    placeholder="请详细描述您的定制需求，包括功能要求、技术规格、应用场景等..."
+                    className={`w-full px-4 py-2 bg-gray-100 border rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent ${
+                      errors.requirements ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   ></textarea>
+                  {errors.requirements && (
+                    <p className="mt-1 text-sm text-red-600">{errors.requirements}</p>
+                  )}
+                  <p className="mt-1 text-sm text-gray-500">
+                    {formData.requirements.length}/1000 字符
+                  </p>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="budget" className="block text-sm font-medium text-gray-700 mb-1">预算范围</label>
+                    <label htmlFor="budget" className="block text-sm font-medium text-gray-700 mb-1">预算范围 *</label>
                     <select
                       id="budget"
                       name="budget"
                       value={formData.budget}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+                      required
+                      className={`w-full px-4 py-2 bg-gray-100 border rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent ${
+                        errors.budget ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     >
-                      <option value="">请选择</option>
+                      <option value="">请选择预算范围</option>
                       <option value="10万以下">10万以下</option>
                       <option value="10-50万">10-50万</option>
                       <option value="50-100万">50-100万</option>
                       <option value="100万以上">100万以上</option>
                     </select>
+                    {errors.budget && (
+                      <p className="mt-1 text-sm text-red-600">{errors.budget}</p>
+                    )}
                   </div>
                   
                   <div>
-                    <label htmlFor="timeline" className="block text-sm font-medium text-gray-700 mb-1">期望交付时间</label>
+                    <label htmlFor="timeline" className="block text-sm font-medium text-gray-700 mb-1">期望交付时间 *</label>
                     <select
                       id="timeline"
                       name="timeline"
                       value={formData.timeline}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent"
+                      required
+                      className={`w-full px-4 py-2 bg-gray-100 border rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-transparent ${
+                        errors.timeline ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     >
-                      <option value="">请选择</option>
+                      <option value="">请选择期望时间</option>
                       <option value="1个月内">1个月内</option>
                       <option value="1-3个月">1-3个月</option>
                       <option value="3-6个月">3-6个月</option>
                       <option value="6个月以上">6个月以上</option>
                     </select>
+                    {errors.timeline && (
+                      <p className="mt-1 text-sm text-red-600">{errors.timeline}</p>
+                    )}
                   </div>
                 </div>
                 

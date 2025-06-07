@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://192.168.31.177:1337';
+// 云服务器地址
+const BASE_URL = 'http://47.128.84.235:1337';
+// 如果云服务器有问题，可以临时切换到本地测试
+// const BASE_URL = 'http://localhost:1337';
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -9,6 +12,30 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// 请求拦截器
+api.interceptors.request.use(
+  (config) => {
+    console.log('发送API请求:', config.method?.toUpperCase(), config.url);
+    return config;
+  },
+  (error) => {
+    console.error('请求错误:', error);
+    return Promise.reject(error);
+  }
+);
+
+// 响应拦截器
+api.interceptors.response.use(
+  (response) => {
+    console.log('API响应成功:', response.config.url, response.status);
+    return response;
+  },
+  (error) => {
+    console.error('API响应错误:', error.config?.url, error.response?.status, error.message);
+    return Promise.reject(error);
+  }
+);
 
 // 产品信息接口
 export interface ProductInfo {
@@ -371,21 +398,52 @@ export class ApiService {
     name: string;        // 姓名
     phone: string;       // 手机号码
     email: string;       // 邮箱
-    companyname: string;     // 公司名称
+    company: string; // 公司名称
+    position: string;    // 职位
     sampleName: string;  // 样品名称
+    quantity: number;    // 数量
     requiredDate: string; // 需求时间
-    requirements: string;  // 需求概述
+    purpose: string;     // 用途说明
+    requirements: string; // 需求概述
+    address: string;     // 收货地址
     urgency: 'normal' | 'urgent' | 'very_urgent'; // 紧急程度
 }): Promise<boolean> {
     try {
+      // 验证必填字段
+      if (!data.name || !data.phone || !data.email || !data.company || 
+          !data.sampleName || !data.requiredDate || !data.requirements) {
+        throw new Error('请填写所有必填字段');
+      }
+
+      // 验证邮箱格式
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(data.email)) {
+        throw new Error('请输入有效的邮箱地址');
+      }
+
+      // 验证手机号格式
+      const phoneRegex = /^1[3-9]\d{9}$/;
+      if (!phoneRegex.test(data.phone)) {
+        throw new Error('请输入有效的手机号码');
+      }
+
+      // 验证数量
+      if (data.quantity < 1 || data.quantity > 100) {
+        throw new Error('样品数量应在1-100之间');
+      }
+
       const mappedData = {
-        name: data.name,
-        phone: data.phone,
-        email: data.email,
-        companyname: data.companyname,
-        sampleName: data.sampleName,
+        name: data.name.trim(),
+        phone: data.phone.trim(),
+        email: data.email.trim().toLowerCase(),
+        company: data.company.trim(),
+        position: data.position.trim(),
+        sampleName: data.sampleName.trim(),
+        quantity: data.quantity,
         requiredDate: data.requiredDate,
-        requirements: data.requirements,
+        purpose: data.purpose.trim(),
+        requirements: data.requirements.trim(),
+        address: data.address.trim(),
         urgency: data.urgency
       };
 
@@ -408,7 +466,39 @@ export class ApiService {
     timeline?: string;
   }): Promise<boolean> {
     try {
-      await api.post('/api/custom-requests', { data });
+      // 验证必填字段
+      if (!data.name || !data.company || !data.phone || !data.email || !data.requirements) {
+        throw new Error('请填写所有必填字段');
+      }
+
+      // 验证邮箱格式
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(data.email)) {
+        throw new Error('请输入有效的邮箱地址');
+      }
+
+      // 验证手机号格式
+      const phoneRegex = /^1[3-9]\d{9}$/;
+      if (!phoneRegex.test(data.phone)) {
+        throw new Error('请输入有效的手机号码');
+      }
+
+      // 验证需求描述长度
+      if (data.requirements.trim().length < 10) {
+        throw new Error('需求描述至少需要10个字符');
+      }
+
+      const mappedData = {
+        name: data.name.trim(),
+        company: data.company.trim(),
+        phone: data.phone.trim(),
+        email: data.email.trim().toLowerCase(),
+        requirements: data.requirements.trim(),
+        budget: data.budget?.trim() || '',
+        timeline: data.timeline?.trim() || ''
+      };
+
+      await api.post('/api/custom-requestes', { data: mappedData });
       return true;
     } catch (error) {
       console.error('提交定制化需求失败:', error);
@@ -476,38 +566,42 @@ export class ApiService {
   // 获取轮播图数据
   static async getCarouselSlides(): Promise<CarouselSlide[]> {
     try {
-      const response = await api.get<ApiResponse<CarouselSlide>>('/api/carousel-slides?populate=*&sort=order:asc&filters[is_active][$eq]=true');
+      console.log('开始获取轮播图数据，请求URL:', `${BASE_URL}/api/carousel-slides?populate=*&sort=order:asc`);
+      const response = await api.get<ApiResponse<CarouselSlide>>('/api/carousel-slides?populate=*&sort=order:asc');
+      
+      console.log('轮播图原始API响应:', response.data);
 
       // 处理每个轮播图，添加媒体URL
       const slides = response.data.data.map(slide => {
+        console.log('处理轮播图原始数据:', slide);
+        
         let imageUrl: string | undefined = undefined;
         let videoUrl: string | undefined = undefined;
-
+        
         // 处理图片URL
-        if (slide.media_type === 'image' && slide.image) {
+        if (slide.image && slide.image.url) {
           imageUrl = `${BASE_URL}${slide.image.url}`;
         }
-
+        
         // 处理视频URL
-        if (slide.media_type === 'video' && slide.video) {
+        if (slide.video && slide.video.url) {
           videoUrl = `${BASE_URL}${slide.video.url}`;
         }
-
-        // 确保CTA字段存在，如果后端没有提供则使用默认值
+        
+        // 处理轮播图数据
         const processedSlide = {
           ...slide,
           imageUrl,
           videoUrl,
-          // 确保CTA字段正确映射
-          cta_text: slide.cta_text || '了解更多',
+          // 确保字段存在，使用默认值
+          cta_text: slide.cta_text || '',
+          cta_link: slide.cta_link || '',
           cta_type: slide.cta_type || 'internal',
-          cta_link: slide.cta_link || '/products',
-          cta_style: slide.cta_style || 'primary'
+          cta_style: slide.cta_style || 'primary',
+          description: slide.subtitle || ''
         };
-
-        // 调试输出，检查数据结构
-        console.log('处理后的轮播图数据:', processedSlide);
         
+        console.log('处理后的轮播图数据:', processedSlide);
         return processedSlide;
       });
 

@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import { Components } from 'react-markdown';
 
-const BASE_URL = 'http://192.168.31.177:1337';
+const BASE_URL = 'http://47.128.84.235:1337';
 
 const News: React.FC = () => {
   const [news, setNews] = useState<NewsArticle[]>([]);
