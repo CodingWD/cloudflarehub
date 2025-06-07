@@ -3,7 +3,7 @@ export async function onRequest(context) {
   let url = new URL(context.request.url);
 
   // 目标 Strapi 后端的基础 URL
-  const strapiBaseUrl = 'http://47.128.84.235:1337';
+  const strapiBaseUrl = 'http://aifafafa.xyz:1337';
 
   // 构建目标 URL
   // context.params.path 是一个数组，包含了匹配到的路径部分
@@ -11,7 +11,8 @@ export async function onRequest(context) {
   // 如果请求是 /api/foo/bar, context.params.path 会是 ['foo', 'bar']
   // 我们需要将它们拼接起来
   const targetPath = context.params.path.join('/');
-  const targetUrl = `${strapiBaseUrl}/api/${targetPath}${url.search}`;
+  // 移除拼接中的 /api/，因为 context.params.path 已经包含了 api/entity-name
+  const targetUrl = `${strapiBaseUrl}/${targetPath}${url.search}`;
 
   // 创建一个新的请求，并将其转发到 Strapi 后端
   // 复制原始请求的 headers, method, 和 body
