@@ -1,9 +1,11 @@
 import axios from 'axios';
 
 // 云服务器地址
-const BASE_URL = 'http://47.128.84.235:1337';
-// 如果云服务器有问题，可以临时切换到本地测试
-// const BASE_URL = 'http://localhost:1337';
+// 根据环境使用不同的BASE_URL
+const BASE_URL = process.env.NODE_ENV === 'production' 
+  ? '/api'  // 生产环境使用相对路径，通过代理访问
+  : 'http://47.128.84.235:1337';  // 开发环境直接访问
+
 
 const api = axios.create({
   baseURL: BASE_URL,
