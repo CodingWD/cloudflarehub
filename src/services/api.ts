@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // 云服务器地址
 // 根据环境使用不同的BASE_URL
-const BASE_URL = process.env.NODE_ENV === 'production' 
+export const BASE_URL = process.env.NODE_ENV === 'production' 
   ? '/api'  // 生产环境使用相对路径，通过代理访问
   : 'http://aifafafa.xyz:1337';  // 开发环境也使用域名
 

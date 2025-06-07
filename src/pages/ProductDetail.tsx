@@ -16,12 +16,9 @@ import {
   Settings,
   ExternalLink
 } from 'lucide-react';
-import { ApiService, ProductInfo } from '../services/api';
+import { ApiService, ProductInfo, BASE_URL } from '../services/api';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
-
-// 添加BASE_URL常量
-const BASE_URL = 'http://47.128.84.235:1337';
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -161,7 +158,13 @@ const ProductDetail: React.FC = () => {
   const getProductImages = () => {
     // 如果产品有图片，使用产品图片
     if (product.image && product.image.length > 0) {
-      return product.image.map(img => `${BASE_URL}${img.url}`);
+      // 生产环境下，BASE_URL是'/api'，图片URL已经是相对路径，不需要再拼接BASE_URL
+      // 开发环境下，BASE_URL是'http://aifafafa.xyz:1337'，需要拼接
+      return product.image.map(img => 
+        process.env.NODE_ENV === 'production' 
+          ? `${BASE_URL}${img.url}` 
+          : `${BASE_URL}${img.url}`
+      );
     }
     // 默认图片
     return [
